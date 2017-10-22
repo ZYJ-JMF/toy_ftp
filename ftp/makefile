@@ -1,4 +1,3 @@
-CFLAGS = -Wall
 TARGETS = server client
 
 all: $(TARGETS)

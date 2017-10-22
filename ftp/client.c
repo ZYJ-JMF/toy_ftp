@@ -37,48 +37,57 @@ int main(int argc, char **argv)
 		return 1;
 	}
 
-	fgets(sentence, 4096, stdin);
-	len = strlen(sentence);
-	sentence[len] = '\n';
-	sentence[len + 1] = '\0';
-	
 	p = 0;
-	while (p < len)
-	{
-		int n = write(sockfd, sentence + p, len + 1 - p);
-		if (n < 0) 
-		{
-			printf("Error write(): %s(%d)\n", strerror(errno), errno);
-			return 1;
- 		} 
- 		else 
-			p += n;		
-	}
-
-	p = 0;
-	while (1) 
-	{
-		int n = read(sockfd, sentence + p, 8191 - p);
-		if (n < 0) 
-		{
-			printf("Error read(): %s(%d)\n", strerror(errno), errno);
-			return 1;
-		} 
-		else if (n == 0) 
-		{
-			break;
-		} 
-		else 
-		{
-			p += n;
-			if (sentence[p - 1] == '\n')
-				break;
-		}
-	}
-
+	int n = read(sockfd, sentence + p, 8191 - p);
+	p += n;
 	sentence[p - 1] = '\0';
-
 	printf("FROM SERVER: %s", sentence);
+
+	for(int i = 0; i <= 1; i++)
+	{
+		fgets(sentence, 4096, stdin);
+		len = strlen(sentence);
+		sentence[len] = '\n';
+		sentence[len + 1] = '\0';
+
+		p = 0;
+		while (p < len)
+		{
+			int n = write(sockfd, sentence + p, len + 1 - p);
+			if (n < 0) 
+			{
+				printf("Error write(): %s(%d)\n", strerror(errno), errno);
+				return 1;
+	 		} 
+	 		else 
+				p += n;		
+		}
+
+		p = 0;
+		while (1) 
+		{
+			int n = read(sockfd, sentence + p, 8191 - p);
+			if (n < 0) 
+			{
+				printf("Error read(): %s(%d)\n", strerror(errno), errno);
+				return 1;
+			} 
+			else if (n == 0) 
+			{
+				break;
+			} 
+			else 
+			{
+				p += n;
+				if (sentence[p - 1] == '\n')
+					break;
+			}
+		}
+
+		sentence[p - 1] = '\0';
+
+		printf("FROM SERVER: %s", sentence);
+	}
 
 	close(sockfd);
 
