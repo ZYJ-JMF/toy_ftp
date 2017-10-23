@@ -10,30 +10,20 @@
 
 #pragma once
 
-//得到输入命令,返回命令长度
 //TODO:限制最大长度
+//TODO:多次读取
 int getSentence(int connfd, char* sentence)
 {
-	int p = 0;
-	while (1)
-    {
-		int n = read(connfd, sentence + p, 8191 - p);
-		if (n <= 0) 
-		{
-			printf("Error read(): %s(%d)\n", strerror(errno), errno);
-			return -1;
-		} 
-		else if (n == 0) 
-			continue;
-		else 
-		{
-			p += n;
-			if (sentence[p - 1] == '\n') 
-				break;
-		}
+	int n;
+	n = recv(connfd, sentence, 8191 , 0);
+	if(n < 0)
+	{
+		printf("Error read(): %s(%d)\n", strerror(errno), errno);
+		return -1;
 	}
-	sentence[p - 1] = '\0';
-	return p - 1;
+	printf("receive %d chars from client\n", n);
+	sentence[n] = '\0';
+    return 1;
 }
 
 void convertToUpperCase(char* sentence)
@@ -42,12 +32,19 @@ void convertToUpperCase(char* sentence)
 	for (int p = 0; p < len; p++) 
 		sentence[p] = toupper(sentence[p]);
 }
+//删去命令末尾的'\n'
+void removeLineFeed(char* sentence)
+{
+	int len = strlen(sentence);
+	if(sentence[len - 1] == '\n' || sentence[len - 1] == '\r')
+	{
+		sentence[len - 1] = '\0';
+	}
+}
 //从sentence中得到前面的command和parameter,出错返回-1
-//保证两个字符串最后是"\0"
 int getCommand(char* sentence, char* command, char* parameter)
 {
 	int len = strlen(sentence);
-	printf("%d\n", len);
 	int spacePos = -1;
 	for(int i = 0; i < len; i++)
 	{
@@ -79,7 +76,7 @@ int getCommand(char* sentence, char* command, char* parameter)
 	return 1;
 }
 //向client发送信息
-int sendMsg(int connfd, char* sentence)
+void sendMsg(int connfd, char* sentence)
 {
 	int len = strlen(sentence);
 	int n = send(connfd, sentence, len + 1, 0);
@@ -87,5 +84,4 @@ int sendMsg(int connfd, char* sentence)
 	{
 		printf("Error send():%s(%d)\n" , strerror(errno), errno);
 	}
-	return n;
 }

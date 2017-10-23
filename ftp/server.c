@@ -1,20 +1,98 @@
 #include"util.h"
 #include"reply.h"
 
-
-int main(int argc, char **argv) 
+void serveOneClient(int connfd)
 {
-	printf("server will run\n");
-	int t; //用于判断是否出错
-	int listenfd, connfd;
-	struct sockaddr_in addr;
 	char sentence[8192];
 	char command[100];
 	char param[100]; //param of command
-	int p;
-	int sentenceLen;
-	int commandLen;
-	int hasLogedin; //是否登录，登录为1，未登录为0
+	int hasLogedin = 0; //是否登录，登录为1，未登录为0
+	int hasInputPass = 0; //是否给出密码
+	sendMsg(connfd, welcomeMsg);
+	printf("Welcome message sent\n");
+	while(1)
+	{
+		command[0] = '\0';
+		param[0] ='\0';
+		if(getSentence(connfd, sentence) < 0)
+			continue;
+		printf("sentence length before: %lu\n", strlen(sentence));
+        convertToUpperCase(sentence);
+        removeLineFeed(sentence);
+        printf("sentence length after: %lu\n", strlen(sentence));
+        printf("sentence: %s\n", sentence);
+        if(getCommand(sentence, command, param) < 0)
+        	continue;
+        //TODO:建立用户表
+        if(hasLogedin == 0)
+        {
+        	if(strcmp(command, "USER") == 0)
+        	{
+        		if(strcmp(param, "ANONYMOUS") == 0)
+        		{
+	        		sendMsg(connfd, requirePassMsg);
+	        		hasLogedin = 1;
+	        	}
+	        	else
+	        	{
+	        		sendMsg(connfd, unknownUserError);
+	        	}
+        	}
+        	else
+        	{
+        		sendMsg(connfd, notLoginError);
+        	}
+
+        }
+        else if(hasInputPass == 0)
+        {
+        	//TODO:检查密码格式
+        	if(strcmp(command, "PASS") == 0)
+        	{
+        		sendMsg(connfd, loginSuccessMsg);
+        		hasInputPass = 1;
+        	}
+        	else
+        	{
+        		sendMsg(connfd, notLoginError);
+        	}
+        }
+        else
+        {
+			//命令处理部分
+			if(strcmp(command, "QUIT") == 0 || strcmp(command, "ABOR") == 0)
+			{
+				hasLogedin = 0;
+				hasInputPass = 0;
+				sendMsg(connfd, goodbyeMsg);
+				break;
+			}
+			else if(strcmp(command, "SYST") == 0)
+			{
+				sendMsg(connfd, sysStatusMsg);
+			}
+			else if(strcmp(command, "TYPE") == 0)
+			{
+				if(strcmp(param, "I") == 0)
+					sendMsg(connfd, typeMsg);
+				else if(strcmp(param, "") == 0)
+					sendMsg(connfd, syntaxError);
+				else
+					sendMsg(connfd, typeError);
+			}
+			else
+			{
+				sendMsg(connfd, syntaxError);
+			}
+		}
+	}
+}
+int main(int argc, char **argv) 
+{
+	printf("server will run\n");
+	int listenfd, connfd;
+	struct sockaddr_in addr;
+	int pid; //multiple processes
 
 	if ((listenfd = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP)) == -1) 
 	{
@@ -41,55 +119,26 @@ int main(int argc, char **argv)
 
 	while (1)
 	{
+		//多个客户端
 		if ((connfd = accept(listenfd, NULL, NULL)) == -1)
 		{
 			printf("Error accept(): %s(%d)\n", strerror(errno), errno);
 			continue;
 		}
-		// 欢迎信息
-		t = send(connfd, welcomeMsg, 100, 0);
-		hasLogedin = 0;
-		printf("Welcome message sent\n");
-		while(1)
+		pid = fork();
+		if(pid < 0)
+			printf("Error fork()");
+		else if(pid == 0) //子进程
 		{
-			command[0] = '\0';
-			param[0] ='\0';
-			sentenceLen = getSentence(connfd, sentence);
-			if(sentenceLen == -1)
-			{
-				printf("Error read():%s(%d)\n" , strerror(errno), errno); 
-				close(connfd);
-				continue;
-			}
-	        convertToUpperCase(sentence);
-	        t = getCommand(sentence, command, param);
-	        //TODO:t的错误处理
-
-			commandLen = strlen(command);
-			printf("%s", command);
-
-			//命令处理部分
-			if(strcmp(command, "QUIT") == 0 || strcmp(command, "ABOR") == 0)
-			{
-				t = sendMsg(connfd, goodbyeMsg);
-				break;
-			}
-			else if(strcmp(command, "SYST") == 0)
-			{
-				t = sendMsg(connfd, sysStatusMsg);
-			}
-			else if(strcmp(command, "TYPE") == 0)
-			{
-				if(strcmp(param, "I") == 0)
-					t = sendMsg(connfd, typeMsg);
-				else if(strcmp(param, "") == 0)
-					t = sendMsg(connfd, syntaxError);
-				else
-					t = sendMsg(connfd, typeError);
-			}
+			close(listenfd);
+			serveOneClient(connfd);
+			close(connfd);
+			return 0;
 		}
-		close(connfd);
+		else
+			close(connfd); //防止耗尽socket描述符
 	}
 	close(listenfd);
+	return 0;
 }
 
