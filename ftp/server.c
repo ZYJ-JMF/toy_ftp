@@ -88,12 +88,14 @@ void serveOneClient(int connfd)
 	}
 }
 int main(int argc, char **argv) 
-{
-	printf("server will run\n");
+{	
+	int status = getParamsFromCli(argc, argv);
+	
+	printf("server will run with port %d and root directory %s\n", port, rootPath);
 	int listenfd, connfd;
 	struct sockaddr_in addr;
 	int pid; //multiple processes
-
+	close(listenfd);
 	if ((listenfd = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP)) == -1) 
 	{
 		printf("Error socket(): %s(%d)\n", strerror(errno), errno);
@@ -102,7 +104,7 @@ int main(int argc, char **argv)
 
 	memset(&addr, 0, sizeof(addr));
 	addr.sin_family = AF_INET;
-	addr.sin_port = 6789;
+	addr.sin_port = port;
 	addr.sin_addr.s_addr = htonl(INADDR_ANY);
 
 	if (bind(listenfd, (struct sockaddr*)&addr, sizeof(addr)) == -1) 
