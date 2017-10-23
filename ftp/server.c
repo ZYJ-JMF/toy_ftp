@@ -132,11 +132,11 @@ int main(int argc, char **argv)
 		{
 			close(listenfd);
 			serveOneClient(connfd);
+			printf("serving one is over.\n");
 			close(connfd);
 			return 0;
 		}
-		else
-			close(connfd); //防止耗尽socket描述符
+		close(connfd);
 	}
 	close(listenfd);
 	return 0;
