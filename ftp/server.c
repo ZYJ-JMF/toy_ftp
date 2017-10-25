@@ -1,11 +1,7 @@
 #include"util_server.h"
 #include"reply.h"
-#include"checkInput.h"
+#include"configs.h"
 
-//默认端口参数根目录,服务器ip
-int port = 6789;
-char rootPath[8192] = "/tmp";
-char serverIp[80] = "127,0,0,1,";
 
 //从命令行获取参数，错误返回-1，正确返回1
 //TODO:非法命令的处理
@@ -233,14 +229,13 @@ int main(int argc, char **argv)
 	if(getParamsFromCli(argc, argv) < 0)
 		return 1;
 	
-	printf("server will run with port %d and root directory %s\n", port, rootPath);
 	int listenfd, connfd;
 	int pid;
-
 	listenfd = createSocket();
 	if(bindSocketToServer(listenfd, port) == -1)
 		return 1;
 	setSocketOption(listenfd);
+	printf("server will run with port %d and root directory %s\n", port, rootPath);
 	while (1)
 	{
 		if ((connfd = accept(listenfd, NULL, NULL)) == -1)

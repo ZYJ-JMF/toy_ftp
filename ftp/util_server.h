@@ -97,3 +97,8 @@ void sendMsg(int connfd, char* sentence)
 		printf("Error send():%s(%d)\n" , strerror(errno), errno);
 	}
 }
+
+int checkPortParam(char* param)
+{
+	return 1;
+}
