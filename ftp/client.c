@@ -39,8 +39,8 @@ int main(int argc, char **argv)
 	}
 	memset(&addr, 0, sizeof(addr));
 	addr.sin_family = AF_INET;
-	addr.sin_port = 6789;
-	if (inet_pton(AF_INET, "127.0.0.1", &addr.sin_addr) <= 0) 
+	addr.sin_port = 21;
+	if (inet_pton(AF_INET, "192.241.151.16", &addr.sin_addr) <= 0) 
 	{
 		printf("Error inet_pton(): %s(%d)\n", strerror(errno), errno);
 		return 1;

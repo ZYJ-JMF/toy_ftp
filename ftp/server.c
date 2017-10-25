@@ -49,6 +49,7 @@ int createSocket()
 		printf("Error socket(): %s(%d)\n", strerror(errno), errno);
 		exit(1);
 	}
+	printf("socketfd is: %d\n", listenfd);
 	return listenfd;
 }
 //将socket绑定到服务器
@@ -96,7 +97,10 @@ void serveOneClient(int connfd)
 	char pasvModeInfo[8192];   //passive模式传送文件端口信息
 
 	int pasvPort;
-	int pasvFilefd;  //用于传送文件的socket
+	int portPort;
+	int pasvFilefd = -1;  //用于传送文件的socket
+	int portFilefd = -1;
+
 	sendMsg(connfd, welcomeMsg);
 	printf("Welcome message sent\n");
 	while(1)
@@ -217,6 +221,36 @@ void serveOneClient(int connfd)
 				strcat(pasvMsg, p2c);*/
 
 			}
+			else if(strcmp(command, "RETR"))
+			{
+				if(isPortMode == 1)
+				{
+
+				}
+				else if(isPasvMode == 1)
+				{
+
+				}
+				else
+				{
+					sendMsg(connfd, noPortError);
+				}
+			}
+			else if(strcmp(command, "STOR"))
+			{
+				if(isPortMode == 1)
+				{
+
+				}
+				else if(isPasvMode == 1)
+				{
+
+				}
+				else
+				{
+					sendMsg(connfd, noPortError);
+				}
+			}
 			else
 			{
 				sendMsg(connfd, syntaxError);
@@ -231,6 +265,7 @@ int main(int argc, char **argv)
 	
 	int listenfd, connfd;
 	int pid;
+
 	listenfd = createSocket();
 	if(bindSocketToServer(listenfd, port) == -1)
 		return 1;
