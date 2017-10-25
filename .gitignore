@@ -1,4 +1,2 @@
 *.out
-server
-client
 configs.h
