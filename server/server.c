@@ -200,6 +200,10 @@ void serveOneClient(int connfd)
 						break;
 					else
 						pasvPort += 1;
+					if(pasvPort >= 65535)
+					{
+						sendMsg(connfd, noAvailablePortError);
+					}
 				}
 				printf("Listening port: %d\n", pasvPort);
 				char serverIpWithComma[80];

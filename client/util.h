@@ -10,52 +10,18 @@
 #include <getopt.h>
 #include <regex.h>
 
-#define VALUE_PORT 12345
-#define VALUE_ROOT 54321
 
-#pragma once
-//字符串中字符替换，将所有src替换为dest
-void strreplace(char*sentence, char src, char dest)
+//返回服务器返回的状态码，出错则返回-1
+int getDigit(char*sentence)
 {
-	for(int i = 0; i < strlen(sentence); i++)
+	char digit[4];
+	for(int i = 0; sentence[i] != ' '; i++)
 	{
-		if(sentence[i] == src)
-			sentence[i] = dest;
+		digit[i] = sentence[i];
 	}
+	int digitInt = atoi(digit);
+	return digitInt;
 }
-void intToString(int n, char* s)
-{
-	int integer = n;
-	int r = 0;
-	int len = 1;
-	while(integer / 10 != 0)
-	{
-		integer /= 10;
-		len++;
-	}
-	integer = n;
-	for(int i = len - 1; i >= 0; i--)
-	{
-		s[i] = integer % 10 + '0';
-		integer /= 10;
-	}
-	s[len] = '\0';
-}
-//TODO:多次读取
-int getSentence(int connfd, char* sentence)
-{
-	int n;
-	n = recv(connfd, sentence, 8191 , 0);
-	if(n < 0)
-	{
-		printf("Error read(): %s(%d)\n", strerror(errno), errno);
-		return -1;
-	}
-	printf("receive %d chars from client\n", n);
-	sentence[n] = '\0';
-    return 1;
-}
-
 void convertToUpperCase(char* sentence)
 {
 	int len = strlen(sentence);
@@ -71,6 +37,7 @@ void removeLineFeed(char* sentence)
 		sentence[len - 1] = '\0';
 	}
 }
+
 //从sentence中得到前面的command和parameter,出错返回-1
 int getCommand(char* sentence, char* command, char* parameter)
 {
@@ -103,20 +70,5 @@ int getCommand(char* sentence, char* command, char* parameter)
 			command[i] = sentence[i];
 		}
 	}
-	return 1;
-}
-//向client发送信息
-void sendMsg(int connfd, char* sentence)
-{
-	int len = strlen(sentence);
-	int n = send(connfd, sentence, len + 1, 0);
-	if(n < 0)
-	{
-		printf("Error send():%s(%d)\n" , strerror(errno), errno);
-	}
-}
-
-int checkPortParam(char* param)
-{
 	return 1;
 }

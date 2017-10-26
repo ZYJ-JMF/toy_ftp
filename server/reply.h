@@ -16,5 +16,6 @@ char* cannotConnectError = "425 Can't connect to given port.\r\n";
 char* syntaxError = "500 Unacceptable syntax.\r\n";
 char* typeError = "501 Wrong parameters.\r\n";
 char* unknownUserError = "501 Unknown user.\r\n";
+char* noAvailablePortError = "510 No available port.\r\n";
 char* notLoginError = "530 You need to login first.\r\n";
 char* noPortError = "530 You need to use PORT or PASV command before every file transfer.\r\n";
