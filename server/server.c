@@ -39,7 +39,118 @@ int getParamsFromCli(int argc, char**argv)
 	}
 	return 1;
 }
+//登录成功返回1，失败返回0
+//TODO:建立用户表
+int handleUserRequest(int connfd, char* param)
+{
+	if(strcmp(param, "ANONYMOUS") == 0)
+    {
+	   	if(sendMsg(connfd, requirePassMsg) == -1)
+	   		return -1;
+	   	return 1;
+	}
+	else
+	{
+	    sendMsg(connfd, unknownUserError);
+	    return -1;
+	}
+}
+//TODO:检查密码格式
+int handlePassRequest(int connfd, char* param)
+{
+	if(sendMsg(connfd, loginSuccessMsg) == -1)
+		return -1;
+	return 1;
+}
 
+int handleSystRequest(int connfd, char* param)
+{
+	if(sendMsg(connfd, sysStatusMsg))
+		return -1;
+	return 1;
+}
+
+int handleTypeRequest(int connfd, char* param)
+{
+	if(strcmp(param, "I") == 0)
+	{
+		sendMsg(connfd, typeMsg);
+		return -1;
+	}
+	else if(strcmp(param, "") == 0)
+	{
+		sendMsg(connfd, syntaxError);
+		return -1;
+	}
+	else
+		sendMsg(connfd, typeError);
+	return 1;
+}
+
+int handlePortRequest(int connfd, char* param, char* portModeInfo)
+{
+	if(checkPortParam(param) == -1)
+	{
+		sendMsg(connfd, typeError);
+		return -1;
+	}
+	else
+	{
+		strcpy(portModeInfo, param);
+		if(sendMsg(connfd, portMsg) == -1)
+			return -1;
+	}
+	return 1;
+}
+
+int handlePasvRequest(int connfd, char* param, int* psockfd)
+{
+	int pasvPort = 30000;
+	*psockfd = createSocket();
+	while(1)
+	{
+		if(bindSocketToServer(*psockfd, pasvPort) > 0)
+		{
+			setSocketOption(*psockfd);
+			startSocketListening(*psockfd, 10);
+			break;
+		}
+		else
+			pasvPort += 1;
+		if(pasvPort >= 65535)
+		{
+			sendMsg(connfd, noAvailablePortError);
+			return -1;
+		}
+	}
+	printf("Listening port: %d\n", pasvPort);
+	char serverIpWithComma[80];
+	strcpy(serverIpWithComma, serverIp);
+	strreplace(serverIpWithComma, '.', ',');
+	int p1 = pasvPort / 256;
+	int p2 = pasvPort % 256;
+	char leftBracket[2] = "(";
+	char rightBracket[2] = ")";
+	char comma[2] = ",";
+	char endOfLine[10] = "\r\n";
+	char p1c[10];
+	char p2c[10];
+	intToString(p1, p1c);
+	intToString(p2, p2c);
+	char pasvMsg[200] = "\0";
+	strcat(pasvMsg, pasvMsgPart);
+	strcat(pasvMsg, leftBracket);
+	strcat(pasvMsg, serverIpWithComma);
+	strcat(pasvMsg, comma);
+	strcat(pasvMsg, p1c);
+	strcat(pasvMsg, comma);
+	strcat(pasvMsg, p2c);
+	strcat(pasvMsg, rightBracket);
+	strcat(pasvMsg, endOfLine);
+	if(sendMsg(connfd, pasvMsg) == -1)
+		return -1;
+	return 1;
+}
 //建立新的socket，返回该socket的描述符
 int createSocket()
 {
@@ -52,32 +163,38 @@ int createSocket()
 	printf("socketfd is: %d\n", sockfd);
 	return sockfd;
 }
-//将socket绑定到服务器
-int bindSocketToServer(int listenfd, int port)
+
+//将socket绑定到服务器指定端口
+int bindSocketToServer(int sockfd, int port)
 {
 	struct sockaddr_in addr;
 	memset(&addr, 0, sizeof(addr));
 	addr.sin_family = AF_INET;
 	addr.sin_port = port;
 	addr.sin_addr.s_addr = htonl(INADDR_ANY);
-	if (bind(listenfd, (struct sockaddr*)&addr, sizeof(addr)) == -1) 
+	if (bind(sockfd, (struct sockaddr*)&addr, sizeof(addr)) == -1) 
 	{
 		printf("Error bind(): %s(%d)\n", strerror(errno), errno);
 		return -1;	
 	}
 	return 1;
 }
-//设置socket为可立即复用，最大排队连接个数为10
-int setSocketOption(int fd)
+//设置socket为可立即复用
+int setSocketOption(int sockfd)
 {
 	int reuse = 1;
-	if(setsockopt(fd, SOL_SOCKET, SO_REUSEADDR, &reuse, sizeof reuse) == -1)
+	if(setsockopt(sockfd, SOL_SOCKET, SO_REUSEADDR, &reuse, sizeof reuse) == -1)
 	{
 		printf("Error set(): %s(%d)\n", strerror(errno), errno);
 		return -1;
 	}
-	//10是最大可以排队连接的个数，在这里（并发情况下）应该无意义
-	if (listen(fd, 10) == -1) 
+	return 1;
+}
+
+//10是最大可以排队连接的个数，在这里（并发情况下）应该无意义
+int startSocketListening(int sockfd, int maxQueueLength)
+{
+	if (listen(sockfd, maxQueueLength) == -1) 
 	{
 		printf("Error listen(): %s(%d)\n", strerror(errno), errno);
 		return -1;
@@ -89,17 +206,16 @@ void serveOneClient(int connfd)
 	char sentence[8192];
 	char command[100];
 	char param[100]; //param of command
-	int hasLogedin = 0; //是否登录，登录为1，未登录为0
-	int hasInputPass = 0; //是否给出密码
-	int isPortMode = 0;  //是否为端口模式
-	int isPasvMode = 0;  //是否为passive模式
-	char portModeInfo[8192];   //端口模式传送文件所用端口信息
-	char pasvModeInfo[8192];   //passive模式传送文件端口信息
+	int hasLogedin = -1; //是否登录，登录为1，未登录为-1
+	int hasInputPass = -1; //是否给出密码
+	int isPortMode = -1;  //是否为端口模式
+	int isPasvMode = -1;  //是否为passive模式
+	char portModeInfo[8192];   //端口模式传送文件所用信息
+	char pasvModeInfo[8192];   //passive模式传送文件所用信息
 
 	int pasvPort;
-	int portPort;
-	int pasvFilefd = -1;  //用于传送文件的socket
-	int portFilefd = -1;
+	int pasvListenfd = -1;  //pasv中用于传送文件的socket
+	int fileConnfd = -1;    //连接客户端的socket
 
 	sendMsg(connfd, welcomeMsg);
 	printf("Welcome message sent\n");
@@ -109,45 +225,27 @@ void serveOneClient(int connfd)
 		param[0] ='\0';
 		if(getSentence(connfd, sentence) < 0)
 			continue;
-		printf("sentence length before: %lu\n", strlen(sentence));
         convertToUpperCase(sentence);
         removeLineFeed(sentence);
-        printf("sentence length after: %lu\n", strlen(sentence));
         printf("sentence: %s\n", sentence);
         if(getCommand(sentence, command, param) < 0)
         	continue;
-        //TODO:建立用户表
-        if(hasLogedin == 0)
+
+        if(hasLogedin == -1)
         {
         	if(strcmp(command, "USER") == 0)
-        	{
-        		if(strcmp(param, "ANONYMOUS") == 0)
-        		{
-	        		sendMsg(connfd, requirePassMsg);
-	        		hasLogedin = 1;
-	        	}
-	        	else
-	        	{
-	        		sendMsg(connfd, unknownUserError);
-	        	}
-        	}
+        		hasLogedin = handleUserRequest(connfd, param);
         	else
-        	{
         		sendMsg(connfd, notLoginError);
-        	}
         }
-        else if(hasInputPass == 0)
+        else if(hasInputPass == -1)
         {
-        	//TODO:检查密码格式
+        	if(strcmp(command, "USER") == 0)
+        		hasLogedin = handleUserRequest(connfd, param);
         	if(strcmp(command, "PASS") == 0)
-        	{
-        		sendMsg(connfd, loginSuccessMsg);
-        		hasInputPass = 1;
-        	}
+        		hasInputPass = handlePassRequest(connfd, param);
         	else
-        	{
         		sendMsg(connfd, notLoginError);
-        	}
         }
         else
         {
@@ -160,76 +258,45 @@ void serveOneClient(int connfd)
 				break;
 			}
 			else if(strcmp(command, "SYST") == 0)
-			{
-				sendMsg(connfd, sysStatusMsg);
-			}
+				handleSystRequest(connfd, param);
+
 			else if(strcmp(command, "TYPE") == 0)
-			{
-				if(strcmp(param, "I") == 0)
-					sendMsg(connfd, typeMsg);
-				else if(strcmp(param, "") == 0)
-					sendMsg(connfd, syntaxError);
-				else
-					sendMsg(connfd, typeError);
-			}
+				handleTypeRequest(connfd, param);
+
 			else if(strcmp(command, "PORT") == 0)
 			{
-				if(checkPortParam(param) == -1)
+				if(handlePortRequest(connfd, param, portModeInfo))
 				{
-					sendMsg(connfd, typeError);
-					continue;
-				}
-				else
-				{
-					isPasvMode = 0;
+					isPasvMode = -1;
 					isPortMode = 1;
-					strcpy(portModeInfo, param);
-					sendMsg(connfd, portMsg);
 				}
 			}
+
 			else if(strcmp(command, "PASV") == 0)
 			{
-				isPasvMode = 1;
-				isPortMode = 0;
-				//尝试绑定并选择一个可用端口
-				pasvPort = 30000;
-				pasvFilefd = createSocket();
-				while(1)
+				//如果之前有连接，则断掉连接
+				if(fileConnfd != -1)
 				{
-					if(bindSocketToServer(pasvFilefd, pasvPort) > 0)
-						break;
-					else
-						pasvPort += 1;
-					if(pasvPort >= 65535)
-					{
-						sendMsg(connfd, noAvailablePortError);
-					}
+					close(fileConnfd);
+					fileConnfd = -1;
 				}
-				printf("Listening port: %d\n", pasvPort);
-				char serverIpWithComma[80];
-				strcpy(serverIpWithComma, serverIp);
-				strreplace(serverIpWithComma, '.', ',');
-				int p1 = pasvPort / 256;
-				int p2 = pasvPort % 256;
-				char leftBracket[2] = "(";
-				char rightBracket[2] = ")";
-				char comma[2] = ",";
-				char endOfLine[10] = "\r\n";
-				char p1c[10];
-				char p2c[10];
-				intToString(p1, p1c);
-				intToString(p2, p2c);
-				char pasvMsg[200];
-				strcat(pasvMsg, pasvMsgPart);
-				strcat(pasvMsg, leftBracket);
-				strcat(pasvMsg, serverIpWithComma);
-				strcat(pasvMsg, comma);
-				strcat(pasvMsg, p1c);
-				strcat(pasvMsg, comma);
-				strcat(pasvMsg, p2c);
-				strcat(pasvMsg, rightBracket);
-				strcat(pasvMsg, endOfLine);
-				sendMsg(connfd, pasvMsg);
+				if(pasvListenfd != -1)
+				{
+					close(pasvListenfd);
+					pasvListenfd = -1;
+				}
+				int* pPasvListenfd = &pasvListenfd;
+				if(handlePasvRequest(connfd, param, pPasvListenfd))
+				{
+					isPasvMode = 1;
+					isPortMode = -1;
+				}
+				if ((fileConnfd = accept(pasvListenfd, NULL, NULL)) == -1)
+				{
+					printf("Error accept(): %s(%d)\n", strerror(errno), errno);
+					continue;
+				}
+				printf("succeed in accept. File %d \n", fileConnfd);
 			}
 			else if(strcmp(command, "RETR"))
 			{
@@ -268,6 +335,7 @@ void serveOneClient(int connfd)
 		}
 	}
 }
+
 int main(int argc, char **argv) 
 {	
 	if(getParamsFromCli(argc, argv) < 0)
@@ -280,6 +348,7 @@ int main(int argc, char **argv)
 	if(bindSocketToServer(listenfd, port) == -1)
 		return 1;
 	setSocketOption(listenfd);
+	startSocketListening(listenfd, 10);
 	printf("server will run with port %d and root directory %s\n", port, rootPath);
 	while (1)
 	{

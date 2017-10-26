@@ -106,14 +106,16 @@ int getCommand(char* sentence, char* command, char* parameter)
 	return 1;
 }
 //向client发送信息
-void sendMsg(int connfd, char* sentence)
+int sendMsg(int connfd, char* sentence)
 {
 	int len = strlen(sentence);
 	int n = send(connfd, sentence, len + 1, 0);
 	if(n < 0)
 	{
 		printf("Error send():%s(%d)\n" , strerror(errno), errno);
+		return -1;
 	}
+	return 1;
 }
 
 int checkPortParam(char* param)

@@ -121,7 +121,7 @@ int sendPasvRequest(int sockfd)
 	
 	return 1;
 }
-int handlePasvResponse(int sockfd)
+int handlePasvResponse(int sockfd,int* pFileSockfd)
 {
 	char response[1000];
 	if(read(sockfd, response, 8191) < 0)
@@ -130,11 +130,59 @@ int handlePasvResponse(int sockfd)
 		return -1;
 	} 
 	printf("FROM SERVER: %s", response);
+	char serverIp[80];
+	int filePort = 0;
+	getIPFromPasvResponse(response, serverIp);
+	filePort = getPortFromPasvResponse(response);
+	printf("serverIp is %s\n", serverIp);
+	printf("port is %d\n", filePort);
+	//连接
+	*pFileSockfd = createSocket();
+	if(sendConnectRequest(*pFileSockfd, serverIp, filePort) == -1)
+		return -1;
+
+	return 1;
+}
+int sendSystRequest(int sockfd)
+{
+	char* systCommand = "SYST";
+	if(write(sockfd, systCommand, strlen(systCommand)) < 0)
+	{
+		printf("Error write(): %s(%d)\n", strerror(errno), errno);
+		return -1;
+	} 	
+	return 1;
+}
+int handleSystResponse(int sockfd)
+{
+	char response[1000];
+	if(read(sockfd, response, 8191) < 0)
+	{
+		printf("Error read(): %s(%d)\n", strerror(errno), errno);
+		return -1;
+	} 
+	if(getDigit(response) != 215)
+	{
+		printf("No proper reply.\n");
+		printf("current reply is : %s\n", response);
+		return -1; 
+	}
+	printf("FROM SERVER: %s", response);
+	return 1;
+}
+int sendTypeRequest(int sockfd)
+{
+	return 1;
+}
+int handleTypeResponse(int sockfd)
+{
 	return 1;
 }
 int main(int argc, char **argv) 
 {
-	int sockfd;
+	int sockfd = -1;
+	int fileSockfd = -1;
+	int* pFileSockfd = &fileSockfd;
 	char sentence[8192];
 	char command[10];
 	char param[100];
@@ -169,17 +217,23 @@ int main(int argc, char **argv)
 		if(strcmp(command, "PASV") == 0)
 		{
 			if(sendPasvRequest(sockfd) == -1)
-				return 1;
-			if(handlePasvResponse(sockfd) == -1)
-				return 1;
+				continue;
+			if(handlePasvResponse(sockfd, pFileSockfd) == -1)
+				continue;
 		}
 		else if(strcmp(command, "SYST") == 0)
 		{
-
+			if(sendSystRequest(sockfd) == -1)
+				continue;
+			if(handleSystResponse(sockfd) == -1)
+				continue;
 		}
 		else if(strcmp(command, "TYPE") == 0)
 		{
-			
+			if(sendTypeRequest(sockfd) == -1)
+				continue;
+			if(handleTypeResponse(sockfd) == -1)
+				continue;
 		}
 		else
 		{

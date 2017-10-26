@@ -72,3 +72,83 @@ int getCommand(char* sentence, char* command, char* parameter)
 	}
 	return 1;
 }
+void intToString(int n, char* s)
+{
+	int integer = n;
+	int r = 0;
+	int len = 1;
+	while(integer / 10 != 0)
+	{
+		integer /= 10;
+		len++;
+	}
+	integer = n;
+	for(int i = len - 1; i >= 0; i--)
+	{
+		s[i] = integer % 10 + '0';
+		integer /= 10;
+	}
+	s[len] = '\0';
+}
+void strreplace(char*sentence, char src, char dest)
+{
+	for(int i = 0; i < strlen(sentence); i++)
+	{
+		if(sentence[i] == src)
+			sentence[i] = dest;
+	}
+}
+void getIPFromPasvResponse(char* response, char* serverIp)
+{
+	int counter = 0;
+	int i = 0;
+	int j = 0;
+	while(response[i] != '(') 
+		i++;
+	for(j = i + 1; ;j++)
+	{
+		if(response[j] == ',')
+			counter++;
+		if(counter == 4)
+			break;
+		serverIp[j - i - 1] = response[j];
+	}
+	serverIp[j - i + 1] = '\0';
+	strreplace(serverIp, ',', '.');
+}
+
+int getPortFromPasvResponse(char* response)
+{
+	int counter = 0;
+	int i = 0, j = 0;
+	for(i = 0; i < strlen(response); i++)
+	{
+		if(response[i] == ',')
+		{
+			counter++;
+		}
+		if(counter == 4)
+		{
+			break;
+		}
+	}
+	int p1;
+	int p2;
+	char p1c[10];
+	char p2c[10];
+	for(j = 1; response[i + j] != ',';j++)
+	{
+		p1c[j - 1] = response[i + j];
+	}
+	p1c[j - 1] = '\0';
+	int k = j;
+	for(j = j + 1; response[i + j] != ')'; j++)
+	{
+		p2c[j - k - 1] = response[i + j];
+	}
+	p2c[j - k - 1] = '\0';
+	p1 = atoi(p1c);
+	p2 = atoi(p2c);
+	int port = p1 * 256 + p2;
+	return port;
+}
