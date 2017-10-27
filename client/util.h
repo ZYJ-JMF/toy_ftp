@@ -1,5 +1,6 @@
 #include <sys/socket.h>
 #include <netinet/in.h>
+#include <arpa/inet.h>
 #include <unistd.h>
 #include <errno.h>
 #include <ctype.h>
@@ -158,10 +159,13 @@ int recvFile(int connfd, char* fileName)
 	char buffer[8192];
 	int size;
 
-	do{
-		size = recv(connfd, buffer, 8190, 0);
+	while(1)
+	{
+		size = read(connfd, buffer, 8191);
+		if(size <= 0)
+			break;
 		fwrite(buffer, 1, size, f);
-	}while(size > 0);
+	}
 
 	fclose(f);
 	return 1;
@@ -172,9 +176,13 @@ int sendFile(int connfd, char* fileName)
 	char buffer[8192];
 	int size;
 
-	do{
+	while(1)
+	{
 		size = fread(buffer, 1, 8190, f);
+		if(size <= 0)
+			break;
 		send(connfd, buffer, size, 0);
-	}while(size > 0);
+		printf("send %d bytes.\n", size);
+	}
 	return 1;
 }

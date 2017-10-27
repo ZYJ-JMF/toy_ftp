@@ -23,11 +23,6 @@ int sendConnectRequest(int sockfd, char* serverIp, int serverPort)
 	memset(&addr, 0, sizeof(addr));
 	addr.sin_family = AF_INET;
 	addr.sin_port = serverPort;
-	if (inet_pton(AF_INET, serverIp, &addr.sin_addr) <= 0) 
-	{
-		printf("Error inet_pton(): %s(%d)\n", strerror(errno), errno);
-		return -1;
-	}
 	if (connect(sockfd, (struct sockaddr*)&addr, sizeof(addr)) < 0)
 	{
 		printf("Error connect(): %s(%d)\n", strerror(errno), errno);
@@ -35,7 +30,7 @@ int sendConnectRequest(int sockfd, char* serverIp, int serverPort)
 	}
 	return 1;
 }
-//只适用于第一次连接服务器，接收欢迎信息
+//第一次连接服务器，接收欢迎信息
 int handleConnectResponse(int sockfd)
 {
 	char response[1000];
@@ -215,6 +210,7 @@ int handleStorResponsePasv(int sockfd, int fileSockfd, char* fileName)
 		printf("Send file error(): %s(%d)\n", strerror(errno), errno);
 		return -1;
 	}
+	close(fileSockfd);
 	if(read(sockfd, response, 8191) < 0)
 	{
 		printf("Error read(): %s(%d)\n", strerror(errno), errno);
@@ -271,11 +267,10 @@ int main(int argc, char **argv)
 	while(1)
 	{
 		fgets(sentence, 4096, stdin);
-		convertToUpperCase(sentence);
 		removeLineFeed(sentence);
 		if(getCommand(sentence, command, param) == -1) 
 			continue;
-			
+		convertToUpperCase(command);
 		printf("command: %s\n", command);
 		printf("command len: %lu\n", strlen(command));
 		if(strcmp(command, "PASV") == 0)
@@ -307,7 +302,6 @@ int main(int argc, char **argv)
 			switch(transferMode)
 			{
 				case PASV_MODE:
-					printf("prepar to handle response pasv.\n");
 					handleStorResponsePasv(sockfd, fileSockfd, param);
 					break;
 				default:
