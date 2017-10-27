@@ -118,6 +118,32 @@ int sendMsg(int connfd, char* sentence)
 	return 1;
 }
 
+int recvFile(int connfd, char* fileName)
+{
+	FILE* f = fopen(fileName, "wb");
+	char buffer[8192];
+	int size;
+
+	do{
+		size = recv(connfd, buffer, 8190, 0);
+		fwrite(buffer, 1, size, f);
+	}while(size > 0);
+
+	fclose(f);
+	return 1;
+}
+int sendFile(int connfd, char* fileName)
+{
+	FILE * f = fopen(fileName, "rb");
+	char buffer[8192];
+	int size;
+
+	do{
+		size = fread(buffer, 1, 8190, f);
+		send(connfd, buffer, size, 0);
+	}while(size > 0);
+	return 1;
+}
 int checkPortParam(char* param)
 {
 	return 1;

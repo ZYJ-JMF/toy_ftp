@@ -1,4 +1,9 @@
 #include"util.h"
+#include"configs.h"
+
+#define NO_MODE 0
+#define PASV_MODE 1
+#define PORT_MODE 2
 
 //建立新的socket，返回该socket的描述符,出错结束进程
 int createSocket()
@@ -30,6 +35,7 @@ int sendConnectRequest(int sockfd, char* serverIp, int serverPort)
 	}
 	return 1;
 }
+//只适用于第一次连接服务器，接收欢迎信息
 int handleConnectResponse(int sockfd)
 {
 	char response[1000];
@@ -129,7 +135,13 @@ int handlePasvResponse(int sockfd,int* pFileSockfd)
 		printf("Error read(): %s(%d)\n", strerror(errno), errno);
 		return -1;
 	} 
-	printf("FROM SERVER: %s", response);
+	if(getDigit(response) != 227)
+	{
+		printf("No proper reply.\n");
+		printf("current reply is : %s\n", response);
+		return -1; 
+	}
+	printf("FROM SERVER: %s\n", response);
 	char serverIp[80];
 	int filePort = 0;
 	getIPFromPasvResponse(response, serverIp);
@@ -170,6 +182,57 @@ int handleSystResponse(int sockfd)
 	printf("FROM SERVER: %s", response);
 	return 1;
 }
+
+int sendStorRequest(int sockfd, char* fileName)
+{
+	char storPrefix[100] = "STOR ";
+	strcat(storPrefix, fileName);
+	if(write(sockfd, storPrefix, strlen(storPrefix)) < 0)
+	{
+		printf("Error write(): %s(%d)\n", strerror(errno), errno);
+		return -1;
+	} 	
+	return 1;
+}
+
+int handleStorResponsePasv(int sockfd, int fileSockfd, char* fileName)
+{
+	char response[1000];
+	if(read(sockfd, response, 8191) < 0)
+	{
+		printf("Error read(): %s(%d)\n", strerror(errno), errno);
+		return -1;
+	} 
+	if(getDigit(response) != 150)
+	{
+		printf("No proper reply.\n");
+		printf("current reply is : %s\n", response);
+		return -1; 
+	}
+	printf("successfully read from server.\n");
+	if(sendFile(fileSockfd, fileName) == -1)
+	{
+		printf("Send file error(): %s(%d)\n", strerror(errno), errno);
+		return -1;
+	}
+	if(read(sockfd, response, 8191) < 0)
+	{
+		printf("Error read(): %s(%d)\n", strerror(errno), errno);
+		return -1;
+	} 
+	if(getDigit(response) != 226)
+	{
+		printf("No proper reply.\n");
+		printf("current reply is : %s\n", response);
+		printf("send failed.\n");
+		return -1; 
+	}
+	return 1;
+}
+int handleStorResponsePort(int sockfd, int fileSockfd, char* fileName)
+{
+	return 1;
+}
 int sendTypeRequest(int sockfd)
 {
 	return 1;
@@ -183,13 +246,14 @@ int main(int argc, char **argv)
 	int sockfd = -1;
 	int fileSockfd = -1;
 	int* pFileSockfd = &fileSockfd;
+
 	char sentence[8192];
 	char command[10];
 	char param[100];
-	char* user = "anonymous";
-	char* password = "th";
-	char* serverIp = "127.0.0.1";
-	int serverPort = 6789;
+
+	//1代表port模式，2代表pasv模式
+	int transferMode = NO_MODE;
+
 	printf("client will run.\n");
 	sockfd = createSocket();
 	if(sendConnectRequest(sockfd, serverIp, serverPort) == -1)
@@ -220,6 +284,7 @@ int main(int argc, char **argv)
 				continue;
 			if(handlePasvResponse(sockfd, pFileSockfd) == -1)
 				continue;
+			transferMode = PASV_MODE;
 		}
 		else if(strcmp(command, "SYST") == 0)
 		{
@@ -234,6 +299,21 @@ int main(int argc, char **argv)
 				continue;
 			if(handleTypeResponse(sockfd) == -1)
 				continue;
+		}
+		else if(strcmp(command, "STOR") == 0)
+		{
+			if(sendStorRequest(sockfd, param) == -1)
+				continue;
+			switch(transferMode)
+			{
+				case PASV_MODE:
+					printf("prepar to handle response pasv.\n");
+					handleStorResponsePasv(sockfd, fileSockfd, param);
+					break;
+				default:
+					break;
+			}
+			
 		}
 		else
 		{

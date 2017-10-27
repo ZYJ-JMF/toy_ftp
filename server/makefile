@@ -1,4 +1,4 @@
-TARGETS = server client
+TARGETS = server
 
 all: $(TARGETS)
 
