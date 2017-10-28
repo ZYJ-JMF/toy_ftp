@@ -12,4 +12,6 @@ int handleTypeRequest(int connfd, char* param);
 int handlePortRequest(int connfd, char* param, char* clientIp, int* port);
 int handlePasvRequest(int connfd, char* param, int* psockfd);
 
-int handleStorRequestPasv(int connfd, int fileConnfd, char* param);
+int connectToClient(int connfd, int* pFileConnfd, char* clientIp, int clientPort);
+int handleStorRequest(int connfd, int fileConnfd, char* param);
+int handleRetrRequest(int connfd, int fileConnfd, char* param);

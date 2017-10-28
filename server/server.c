@@ -5,43 +5,6 @@
 #define PASV_MODE 1
 #define PORT_MODE 2
 
-//从命令行获取参数，错误返回-1，正确返回1
-//TODO:非法命令的处理
-int getParamsFromCli(int argc, char**argv)
-{
-	//接收命令行参数
-	struct option opts[] = {
-		{"port", required_argument, 0, VALUE_PORT},
-		{"root", required_argument, 0, VALUE_ROOT},
-		{0, 0, 0, 0}};
-	const char* optstring = "r:p:";
-	int index = 0;
-	int opt = -1;
-	while((opt = getopt_long_only(argc, argv, optstring, opts, &index)) != -1)
-	{
-		switch(opt)
-		{
-			case VALUE_PORT:
-				printf("port\n");
-				port = atoi(optarg);
-				break;
-			case VALUE_ROOT:
-				printf("root\n");
-				strcpy(rootPath, optarg);
-				break;
-			case '?':
-				printf("Param error.\n");
-				return -1;
-				break;
-			default:
-				printf("Param error.\n");
-				return -1;
-				break;
-		}
-	}
-	return 1;
-}
-
 void serveOneClient(int connfd)
 {
 	char sentence[8192];
@@ -137,26 +100,38 @@ void serveOneClient(int connfd)
 			}
 			else if(strcmp(command, "RETR") == 0)
 			{
-				if(fileMode == PORT_MODE)
+				switch(fileMode)
 				{
-
+					case PASV_MODE:
+						handleRetrRequest(connfd, fileConnfd, param);
+						closeFileSockets(pFileConnfd, pPasvListenfd);
+						fileMode = NO_MODE;
+						break;
+					case PORT_MODE:
+						connectToClient(connfd, pFileConnfd, clientIp, clientPort);
+						handleRetrRequest(connfd, fileConnfd, param);
+						closeFileSockets(pFileConnfd, pPasvListenfd);
+						fileMode = NO_MODE;
+						break;
+					default:
+						sendMsg(connfd, noPortError);
+						break;
 				}
-				else if(fileMode == PASV_MODE)
-				{
-
-				}
-				else
-					sendMsg(connfd, noPortError);
 			}
 			else if(strcmp(command, "STOR") == 0)
 			{
 				switch(fileMode)
 				{
 					case PASV_MODE:
-						handleStorRequestPasv(connfd, fileConnfd, param);
+						handleStorRequest(connfd, fileConnfd, param);
 						closeFileSockets(pFileConnfd, pPasvListenfd);
+						fileMode = NO_MODE;
 						break;
 					case PORT_MODE:
+						connectToClient(connfd, pFileConnfd, clientIp, clientPort);
+						handleStorRequest(connfd, fileConnfd, param);
+						closeFileSockets(pFileConnfd, pPasvListenfd);
+						fileMode = NO_MODE;
 						break;
 					default:
 						sendMsg(connfd, noPortError);

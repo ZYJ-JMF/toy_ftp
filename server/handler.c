@@ -1,6 +1,6 @@
 #include "handler.h"
 #include "reply.h"
-#include "util.h"
+#include "util.c"
 
 int handleFirstConnectRequest(int connfd)
 {
@@ -18,7 +18,7 @@ int handleFirstConnectRequest(int connfd)
 
 int handleInputSentence(int connfd, char* sentence)
 {
-	if(getSentence(connfd, sentence) < 0)
+	if(recvSentence(connfd, sentence) < 0)
 		return -1;
     removeLineFeed(sentence);
     printf("sentence: %s\n", sentence);
@@ -29,7 +29,7 @@ int parseInputSentence(char* sentence, char* command, char* param)
 {
 	command[0] = '\0';
 	param[0] ='\0';
-    if(getCommand(sentence, command, param) < 0)
+    if(getCommandFromSentence(sentence, command, param) < 0)
     	return -1;
     convertToUpperCase(command);
     printf("command: %s\n", command);
@@ -97,15 +97,14 @@ int handlePortRequest(int connfd, char* param, char* clientIp, int* pClientPort)
 	{
 		getIpFromPortMsg(param, clientIp);
 		getPortFromPortMsg(param, pClientPort);
-		printf("Client IP is %s\n", param);
-		printf("Client port is %d\n", *pClientPort);
+		printf("Client IP is %s.\n", clientIp);
+		printf("Client port is %d.\n", *pClientPort);
 		if(sendMsg(connfd, portMsg) == -1)
 			return -1;
 	}
 	return 1;
 }
 
-//TODO:把底层函数抽到util.h中
 int handlePasvRequest(int connfd, char* param, int* psockfd)
 {
 	int pasvPort = 30000;
@@ -127,44 +126,18 @@ int handlePasvRequest(int connfd, char* param, int* psockfd)
 		}
 	}
 	printf("Listening port: %d\n", pasvPort);
-	char serverIpWithComma[80];
-	strcpy(serverIpWithComma, serverIp);
-	strreplace(serverIpWithComma, '.', ',');
-	int p1 = pasvPort / 256;
-	int p2 = pasvPort % 256;
-	char leftBracket[2] = "(";
-	char rightBracket[2] = ")";
-	char comma[2] = ",";
-	char endOfLine[10] = "\r\n";
-	char p1c[10];
-	char p2c[10];
-	intToString(p1, p1c);
-	intToString(p2, p2c);
 	char pasvMsg[200] = "\0";
-	strcat(pasvMsg, pasvMsgPart);
-	strcat(pasvMsg, leftBracket);
-	strcat(pasvMsg, serverIpWithComma);
-	strcat(pasvMsg, comma);
-	strcat(pasvMsg, p1c);
-	strcat(pasvMsg, comma);
-	strcat(pasvMsg, p2c);
-	strcat(pasvMsg, rightBracket);
-	strcat(pasvMsg, endOfLine);
+	makePasvPortMsg(pasvMsg, pasvPort);
 	if(sendMsg(connfd, pasvMsg) == -1)
 		return -1;
 	return 1;
 }
 
 //TODO:处理错误情况
-int handleStorRequestPasv(int connfd, int fileConnfd, char* param)
+int handleStorRequest(int connfd, int fileConnfd, char* param)
 {
-	printf("prepare to send msg to client.\n");
 	char startTransferPasv[400];
-	char endOfLine[10] = "\r\n";
-	startTransferPasv[0] = '\0';
-	strcat(startTransferPasv, startTransferPart);
-	strcat(startTransferPasv, param);
-	strcat(startTransferPasv, endOfLine);
+	makeStartTransferMsg(startTransferPasv, param);
 	if(sendMsg(connfd, startTransferPasv) == -1)
 		return -1;
 	int state = recvFile(fileConnfd, param);
@@ -176,4 +149,28 @@ int handleStorRequestPasv(int connfd, int fileConnfd, char* param)
 	}
 	else
 		return -1;
+}
+
+int handleRetrRequest(int connfd, int fileConnfd, char* param)
+{
+	char startTransferPasv[400];
+	makeStartTransferMsg(startTransferPasv, param);
+	if(sendMsg(connfd, startTransferPasv) == -1)
+		return -1;
+	int state = sendFile(fileConnfd, param);
+	if(state == 1)
+	{
+		sendMsg(connfd, fileSentMsg);
+		printf("successfully sent.\n");
+		return 1;
+	}
+	else
+		return -1;
+}
+int connectToClient(int connfd, int* pFileConnfd, char* clientIp, int clientPort)
+{
+	*pFileConnfd = createSocket();
+	if(sendConnectRequest(*pFileConnfd, clientIp, clientPort) == -1)
+		return -1;
+	return 1;
 }
