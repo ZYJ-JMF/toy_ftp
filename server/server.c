@@ -2,6 +2,9 @@
 
 void serveOneClient(int connfd)
 {
+	char pWorkingDir[500];
+	strcpy(pWorkingDir, rootPath);
+
 	char sentence[8192];
 	char command[100];
 	char param[100];
@@ -100,14 +103,14 @@ void serveOneClient(int connfd)
 				switch(fileMode)
 				{
 					case PASV_MODE:
-						handleRetrRequest(connfd, fileConnfd, param);
+						handleRetrRequest(connfd, fileConnfd, param, pWorkingDir);
 						closeSocket(pFileConnfd);
 						closeSocket(pPasvListenfd);
 						fileMode = NO_MODE;
 						break;
 					case PORT_MODE:
 						connectToClient(connfd, pFileConnfd, clientIp, clientPort);
-						handleRetrRequest(connfd, fileConnfd, param);
+						handleRetrRequest(connfd, fileConnfd, param, pWorkingDir);
 						closeSocket(pFileConnfd);
 						closeSocket(pPasvListenfd);
 						fileMode = NO_MODE;
@@ -122,14 +125,14 @@ void serveOneClient(int connfd)
 				switch(fileMode)
 				{
 					case PASV_MODE:
-						handleStorRequest(connfd, fileConnfd, param);
+						handleStorRequest(connfd, fileConnfd, param, pWorkingDir);
 						closeSocket(pFileConnfd);
 						closeSocket(pPasvListenfd);
 						fileMode = NO_MODE;
 						break;
 					case PORT_MODE:
 						connectToClient(connfd, pFileConnfd, clientIp, clientPort);
-						handleStorRequest(connfd, fileConnfd, param);
+						handleStorRequest(connfd, fileConnfd, param, pWorkingDir);
 						closeSocket(pFileConnfd);
 						closeSocket(pPasvListenfd);
 						fileMode = NO_MODE;
@@ -139,6 +142,16 @@ void serveOneClient(int connfd)
 						break;
 				}
 			}
+			else if(strcmp(command, "MKD") == 0)
+			{
+				handleMkdRequest(connfd, param, pWorkingDir);
+			}
+			else if(strcmp(command, "RMD") == 0)
+			{
+				handleRmdRequest(connfd, param, pWorkingDir);
+			}
+			else if(strcmp(command, "CWD") == 0)
+				handleCwdRequest(connfd, param, pWorkingDir);
 			else
 				sendMsg(connfd, syntaxError);
 		}

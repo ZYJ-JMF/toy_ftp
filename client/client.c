@@ -1,5 +1,6 @@
-#include"configs.h"
-#include"handler.c"
+#include"common.h"
+#include"handler.h"
+#include"util.h"
 
 #define NO_MODE 0
 #define PASV_MODE 1
@@ -120,6 +121,21 @@ int main(int argc, char **argv)
 					break;
 			}
 			transferMode = NO_MODE;
+		}
+		else if(strcmp(command, "MKD") == 0)
+		{
+			if(sendMkdRequest(sockfd, param) == -1)
+				continue;
+		}
+		else if(strcmp(command, "RMD") == 0)
+		{
+			if(sendRmdRequest(sockfd, param) == -1)
+				continue;
+		}
+		else if(strcmp(command, "CWD") == 0)
+		{
+			if(sendCwdRequest(sockfd, param) == -1)
+				continue;
 		}
 		else
 		{

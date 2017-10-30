@@ -6,7 +6,7 @@ int sendConnectRequest(int sockfd, char* serverIp, int serverPort)
 	char response[1000];
 	memset(&addr, 0, sizeof(addr));
 	addr.sin_family = AF_INET;
-	addr.sin_port = serverPort;
+	addr.sin_port = htons(serverPort);
 	addr.sin_addr.s_addr = inet_addr("127.0.0.1");
 	if (connect(sockfd, (struct sockaddr*)&addr, sizeof(addr)) < 0)
 	{
@@ -263,9 +263,9 @@ int handleStorResponse(int sockfd, int fileSockfd, char* fileName)
 
 int sendRetrRequest(int sockfd, char* fileName)
 {
-	char storPrefix[100] = "RETR ";
-	strcat(storPrefix, fileName);
-	if(write(sockfd, storPrefix, strlen(storPrefix)) < 0)
+	char retrPrefix[100] = "RETR ";
+	strcat(retrPrefix, fileName);
+	if(write(sockfd, retrPrefix, strlen(retrPrefix)) < 0)
 	{
 		printf("Error write(): %s(%d)\n", strerror(errno), errno);
 		return -1;
@@ -314,6 +314,25 @@ int sendTypeRequest(int sockfd)
 	return 1;
 }
 int handleTypeResponse(int sockfd)
+{
+	return 1;
+}
+int sendMkdRequest(int sockfd, char* param)
+{
+	char mkdPrefix[100] = "MKD ";
+	strcat(mkdPrefix, param);
+	if(write(sockfd, mkdPrefix, strlen(mkdPrefix)) < 0)
+	{
+		printf("Error write(): %s(%d)\n", strerror(errno), errno);
+		return -1;
+	} 	
+	return 1;
+}
+int sendRmdRequest(int sockfd, char* param)
+{
+	return 1;
+}
+int sendCwdRequest(int sockfd, char* param)
 {
 	return 1;
 }

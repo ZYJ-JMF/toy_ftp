@@ -1,6 +1,7 @@
 #pragma once
 
 #include <sys/socket.h>
+#include <sys/stat.h>
 #include <netinet/in.h>
 #include <arpa/inet.h>
 #include <unistd.h>
@@ -12,6 +13,7 @@
 #include <stdlib.h>
 #include <getopt.h>
 #include <regex.h>
+#include <dirent.h>
 
 #include "common.h"
 
@@ -30,9 +32,12 @@ int getCommandFromSentence(char* sentence, char* command, char* parameter);
 
 void makeStartTransferMsg(char*startTransferMsg, char*fileName);
 void makePasvPortMsg(char* pasvMsg, int pasvPort);
+void makeAbsolutePath(char* filePath, char* rootPath, char* fineName);
 
 //参数检查
 int checkPortParam(char* param);
+//检查路径中是否包含../
+int checkPath(char* path);
 
 //信息传输
 int recvSentence(int connfd, char* sentence);

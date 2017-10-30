@@ -39,9 +39,11 @@ void convertToUpperCase(char* sentence)
 void removeLineFeed(char* sentence)
 {
 	int len = strlen(sentence);
-	if(sentence[len - 1] == '\n' || sentence[len - 1] == '\r')
+	while(sentence[len - 1] == '\n' || sentence[len - 1] == '\r')
 	{
 		sentence[len - 1] = '\0';
+		len--;
+		//printf("Remove line feed at pos %d.\n", len - 1);
 	}
 }
 
@@ -183,12 +185,27 @@ void makeStartTransferMsg(char* startTransferMsg, char* fileName)
 	strcat(startTransferMsg, endOfLine);
 }
 
+void makeAbsolutePath(char* filePath, char* rootPath, char* fileName)
+{
+	char slash[2] = "/";
+	strcat(filePath, rootPath);
+	strcat(filePath, slash);
+	strcat(filePath, fileName);
+}
 //参数检查
 int checkPortParam(char* param)
 {
 	return 1;
 }
 
+int checkPath(char* path)
+{
+	const char pattern[10] = "..";
+	if(strstr(path, pattern) != NULL)
+		return -1;
+	else
+		return 1;
+}
 //信息传输
 int recvSentence(int connfd, char* sentence)
 {

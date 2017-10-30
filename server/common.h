@@ -10,6 +10,9 @@ extern char* goodbyeMsg;
 extern char* fileSentMsg;
 extern char* pasvMsgPart;
 extern char* loginSuccessMsg;
+extern char* mkdSuccessMsgPart;
+extern char* rmdSuccessMsgPart;
+extern char* cwdSuccessMsgPart;
 
 extern char* requirePassMsg;
 
@@ -21,9 +24,13 @@ extern char* syntaxError;
 extern char* typeError;
 extern char* portSyntaxError;
 extern char* unknownUserError;
+extern char* invalidPathError;
 extern char* noAvailablePortError;
 extern char* notLoginError;
 extern char* fileNotExistError;
+extern char* mkdFailError;
+extern char* rmdFailError;
+extern char* cwdFailError;
 
 //服务器的配置
 extern int port; 

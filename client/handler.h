@@ -1,4 +1,6 @@
+#pragma once
 #include"util.h"
+#include"common.h"
 
 int sendConnectRequest(int sockfd, char* serverIp, int serverPort);
 
@@ -10,6 +12,9 @@ int sendRetrRequest(int sockfd, char* fileName);
 int sendStorRequest(int sockfd, char* fileName);
 int sendPasvRequest(int sockfd);
 int sendPortRequest(int sockfd, char* param);
+int sendMkdRequest(int sockfd, char* param);
+int sendRmdRequest(int sockfd, char* param);
+int sendCwdRequest(int sockfd, char* param);
 
 int handlePassResponse(int sockfd);
 int handleUserResponse(int sockfd);

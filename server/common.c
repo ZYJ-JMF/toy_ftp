@@ -10,7 +10,9 @@ char* goodbyeMsg = "221 Goodbye.\r\n";
 char* fileSentMsg = "226 Transfer complete.\r\n";
 char* pasvMsgPart = "227 Entering passive mode";
 char* loginSuccessMsg = "230 Guest login ok, access restrictions apply.\r\n";
-
+char* mkdSuccessMsgPart = "250 Successfully make directory ";
+char* rmdSuccessMsgPart = "250 Successfully remove directory ";
+char* cwdSuccessMsgPart = "250 Successfully change working directory to ";
 char* requirePassMsg = "331 Guest login ok, send your e-mail address as password.\r\n";
 
 char* cannotConnectError = "425 Can't connect to given port.\r\n";
@@ -21,11 +23,15 @@ char* syntaxError = "500 Unacceptable syntax.\r\n";
 char* typeError = "501 Wrong parameters.\r\n";
 char* portSyntaxError = "501 Wrong port parameters.\r\n";
 char* unknownUserError = "501 Unknown user.\r\n";
+char* invalidPathError = "504 The path is invalid(contains ../?).\r\n";
 char* noAvailablePortError = "510 No available port.\r\n";
 char* notLoginError = "530 You need to login first.\r\n";
 char* fileNotExistError = "550 File does not exist.\r\n";
+char* mkdFailError = "550 Creation failed.\r\n";
+char* rmdFailError = "550 Removal failed.\r\n";
+char* cwdFailError = "550 Change directory failed.\r\n";
 
 //服务器的配置
 int port = 6789; 
-char* rootPath = "/tmp";
+char* rootPath = "/Users/pingguo/Desktop/CN1_ftp/server/tmp";
 char* serverIp = "127.0.0.1";

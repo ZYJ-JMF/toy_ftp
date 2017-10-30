@@ -44,11 +44,13 @@ int handleUserRequest(int connfd, char* param)
     {
 	   	if(sendMsg(connfd, requirePassMsg) == -1)
 	   		return -1;
+	   	printf("User login succeed. Send require pass msg.\n");
 	   	return 1;
 	}
 	else
 	{
 	    sendMsg(connfd, unknownUserError);
+	    printf("Error: unknown user.\n");
 	    return -1;
 	}
 }
@@ -58,6 +60,7 @@ int handlePassRequest(int connfd, char* param)
 {
 	if(sendMsg(connfd, loginSuccessMsg) == -1)
 		return -1;
+	printf("password succeed.\n");
 	return 1;
 }
 
@@ -133,13 +136,21 @@ int handlePasvRequest(int connfd, char* param, int* psockfd)
 }
 
 //TODO:处理错误情况
-int handleStorRequest(int connfd, int fileConnfd, char* param)
+//TODO:当param中有".."时拒绝请求
+int handleStorRequest(int connfd, int fileConnfd, char* param, char* pWorkingDir)
 {
+	if(checkPath(param) == -1)
+	{
+		sendMsg(connfd, invalidPathError);
+		return -1;
+	}
 	char startTransferPasv[400];
 	makeStartTransferMsg(startTransferPasv, param);
 	if(sendMsg(connfd, startTransferPasv) == -1)
 		return -1;
-	int state = recvFile(fileConnfd, param);
+	char filePath[300];
+	makeAbsolutePath(filePath, pWorkingDir, param);
+	int state = recvFile(fileConnfd, filePath);
 	if(state == 1)
 	{
 		sendMsg(connfd, fileSentMsg);
@@ -150,13 +161,20 @@ int handleStorRequest(int connfd, int fileConnfd, char* param)
 		return -1;
 }
 
-int handleRetrRequest(int connfd, int fileConnfd, char* param)
+int handleRetrRequest(int connfd, int fileConnfd, char* param, char* pWorkingDir)
 {
+	if(checkPath(param) == -1)
+	{
+		sendMsg(connfd, invalidPathError);
+		return -1;
+	}
 	char startTransferPasv[400];
 	makeStartTransferMsg(startTransferPasv, param);
 	if(sendMsg(connfd, startTransferPasv) == -1)
 		return -1;
-	int state = sendFile(fileConnfd, param);
+	char filePath[300];
+	makeAbsolutePath(filePath, pWorkingDir, param);
+	int state = sendFile(fileConnfd, filePath);
 	if(state == 1)
 	{
 		sendMsg(connfd, fileSentMsg);
@@ -172,4 +190,91 @@ int connectToClient(int connfd, int* pFileConnfd, char* clientIp, int clientPort
 	if(sendConnectRequest(*pFileConnfd, clientIp, clientPort) == -1)
 		return -1;
 	return 1;
+}
+
+int handleMkdRequest(int connfd, char* param, char* pWorkingDir)
+{
+	if(checkPath(param) == -1)
+	{
+		sendMsg(connfd, invalidPathError);
+		return -1;
+	}
+	char filePath[200];
+	makeAbsolutePath(filePath, pWorkingDir, param);
+	DIR* dir = opendir(filePath);
+	if(dir)
+	{
+		printf("directory exists.\n");
+		sendMsg(connfd, mkdFailError);
+		return -1;
+	}
+	else if(mkdir(filePath, 0777) == -1)
+	{
+		printf("Wrong path.\n");ı
+		sendMsg(connfd, mkdFailError);
+		return -1;
+	}
+	else
+	{
+		printf("succeed in creating directory.\n");
+		char mkdSuccessMsg[100];
+		char endOfLine[10] = "\r\n";
+		strcat(mkdSuccessMsg, mkdSuccessMsgPart);
+		strcat(mkdSuccessMsg, filePath);
+		strcat(mkdSuccessMsg, endOfLine);
+		sendMsg(connfd, mkdSuccessMsg);
+	}
+	return 1;
+}
+
+int handleRmdRequest(int connfd, char* param, char* pWorkingDir)
+{
+	if(checkPath(param) == -1)
+	{
+		sendMsg(connfd, invalidPathError);
+		return -1;
+	}
+	char filePath[200];
+	makeAbsolutePath(filePath, pWorkingDir, param);
+	int status = rmdir(filePath);
+	if(status == -1)
+	{
+		fprintf(stderr, "Removal failed.\n");
+		sendMsg(connfd, rmdFailError);
+		return -1;
+	}
+	else if(status == 0)
+	{
+		printf("Removal succeed.\n");
+		char rmdSuccessMsg[100];
+		char endOfLine[10] = "\r\n";
+		strcat(rmdSuccessMsg, rmdSuccessMsgPart);
+		strcat(rmdSuccessMsg, filePath);
+		strcat(rmdSuccessMsg, endOfLine);
+		sendMsg(connfd, rmdSuccessMsg);
+	}
+	return 1;
+}
+
+int handleCwdRequest(int connfd, char* param, char* pWorkingDir)
+{
+	DIR* dir = opendir(param);
+	if(!dir)
+	{
+		sendMsg(connfd, cwdFailError);
+		return -1;
+	}
+	else
+	{
+		memset(pWorkingDir, 0, strlen(pWorkingDir));
+		strcpy(pWorkingDir, param);
+		printf("now working dir is %s", pWorkingDir);
+		char cwdSuccessMsg[100];
+		char endOfLine[10] = "\r\n";
+		strcat(cwdSuccessMsg, cwdSuccessMsgPart);
+		strcat(cwdSuccessMsg, param);
+		strcat(cwdSuccessMsg, endOfLine);
+		sendMsg(connfd, cwdSuccessMsg);
+	}
+	return 1;	
 }

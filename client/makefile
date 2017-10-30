@@ -1,11 +1,8 @@
-objects = ser.o handler.o util.o
+objects = client.o handler.o util.o common.o
 
 server : $(objects)
-	cc -Wall -o server $(objects)
-
-main.o : util.h
-utils.o : util.h
+	cc -Wall -o client $(objects)
 
 .PHONY : clean
 clean :
-	rm server $(objects)
+	rm client $(objects)
