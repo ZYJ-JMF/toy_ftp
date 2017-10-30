@@ -1,5 +1,4 @@
-/*服务器的回复字符串*/
-#pragma once
+#include "common.h"
 
 char* startTransferPart = "150 Opening BINARY mode data connection for ";
 
@@ -25,3 +24,8 @@ char* unknownUserError = "501 Unknown user.\r\n";
 char* noAvailablePortError = "510 No available port.\r\n";
 char* notLoginError = "530 You need to login first.\r\n";
 char* fileNotExistError = "550 File does not exist.\r\n";
+
+//服务器的配置
+int port = 6789; 
+char* rootPath = "/tmp";
+char* serverIp = "127.0.0.1";

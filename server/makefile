@@ -1,6 +1,8 @@
-TARGETS = server
+objects = server.o handler.o util.o common.o
 
-all: $(TARGETS)
+server : $(objects)
+	cc -Wall -o server $(objects)
 
-clean:
-	rm -f $(TARGETS)
+.PHONY : clean
+clean :
+	rm server $(objects)

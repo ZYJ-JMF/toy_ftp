@@ -1,4 +1,6 @@
 #pragma once
+#include "common.h"
+#include "util.h"
 
 int handleFirstConnectRequest(int connfd);
 

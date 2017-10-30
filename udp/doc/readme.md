@@ -8,6 +8,10 @@ So please make sure that python you use is python3 while running those programs.
 Settings: localhost, port 9876 as default.
 ### Question1:How to write a chat program with UDP?
 To write a simple chat program, firstly we need a server and some clients. If one client want to send message to another client, The it needs to send packets containing chat info and target client to server. The server receives packets from the sender, analyse it and then send it to the target client.
+
+To avoid problems in the order of message, we can add timestamp info to message so that the server can analyse the message and send them in the right order.
+
+By the way, it is said that QQ was first written with UDP.
 ### Question2:Can we use the UDP to transfer a file? If so, how?
 Yes.
 

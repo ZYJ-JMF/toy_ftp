@@ -1,6 +1,11 @@
-TARGETS = client
+objects = ser.o handler.o util.o
 
-all: $(TARGETS)
+server : $(objects)
+	cc -Wall -o server $(objects)
 
-clean:
-	rm -f $(TARGETS)
+main.o : util.h
+utils.o : util.h
+
+.PHONY : clean
+clean :
+	rm server $(objects)

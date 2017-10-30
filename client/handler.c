@@ -7,6 +7,7 @@ int sendConnectRequest(int sockfd, char* serverIp, int serverPort)
 	memset(&addr, 0, sizeof(addr));
 	addr.sin_family = AF_INET;
 	addr.sin_port = serverPort;
+	addr.sin_addr.s_addr = inet_addr("127.0.0.1");
 	if (connect(sockfd, (struct sockaddr*)&addr, sizeof(addr)) < 0)
 	{
 		printf("Error connect(): %s(%d)\n", strerror(errno), errno);

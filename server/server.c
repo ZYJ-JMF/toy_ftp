@@ -1,9 +1,4 @@
-#include "configs.h"
-#include "handler.c"
-
-#define NO_MODE 0
-#define PASV_MODE 1
-#define PORT_MODE 2
+#include"server.h"
 
 void serveOneClient(int connfd)
 {

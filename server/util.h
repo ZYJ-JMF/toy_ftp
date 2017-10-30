@@ -1,3 +1,5 @@
+#pragma once
+
 #include <sys/socket.h>
 #include <netinet/in.h>
 #include <arpa/inet.h>
@@ -11,10 +13,10 @@
 #include <getopt.h>
 #include <regex.h>
 
+#include "common.h"
+
 #define VALUE_PORT 12345
 #define VALUE_ROOT 54321
-
-#pragma once
 
 //字符串处理
 void strreplace(char*sentence, char src, char dest);

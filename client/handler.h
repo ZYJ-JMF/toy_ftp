@@ -1,4 +1,4 @@
-#include"util.c"
+#include"util.h"
 
 int sendConnectRequest(int sockfd, char* serverIp, int serverPort);
 
