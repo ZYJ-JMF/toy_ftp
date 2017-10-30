@@ -68,7 +68,8 @@ void serveOneClient(int connfd)
 
 			else if(strcmp(command, "PORT") == 0)
 			{
-				closeFileSockets(pFileConnfd, pPasvListenfd);
+				closeSocket(pFileConnfd);
+				closeSocket(pPasvListenfd);
 				int* pClientPort = &clientPort;
 				if(handlePortRequest(connfd, param, clientIp, pClientPort) == 1)
 				{
@@ -82,7 +83,8 @@ void serveOneClient(int connfd)
 			else if(strcmp(command, "PASV") == 0)
 			{
 				//如果之前有连接，则断掉连接
-				closeFileSockets(pFileConnfd, pPasvListenfd);
+				closeSocket(pFileConnfd);
+				closeSocket(pPasvListenfd);
 				if(handlePasvRequest(connfd, param, pPasvListenfd) == 1)
 				{
 					fileMode = PASV_MODE;
@@ -99,13 +101,15 @@ void serveOneClient(int connfd)
 				{
 					case PASV_MODE:
 						handleRetrRequest(connfd, fileConnfd, param);
-						closeFileSockets(pFileConnfd, pPasvListenfd);
+						closeSocket(pFileConnfd);
+						closeSocket(pPasvListenfd);
 						fileMode = NO_MODE;
 						break;
 					case PORT_MODE:
 						connectToClient(connfd, pFileConnfd, clientIp, clientPort);
 						handleRetrRequest(connfd, fileConnfd, param);
-						closeFileSockets(pFileConnfd, pPasvListenfd);
+						closeSocket(pFileConnfd);
+						closeSocket(pPasvListenfd);
 						fileMode = NO_MODE;
 						break;
 					default:
@@ -119,13 +123,15 @@ void serveOneClient(int connfd)
 				{
 					case PASV_MODE:
 						handleStorRequest(connfd, fileConnfd, param);
-						closeFileSockets(pFileConnfd, pPasvListenfd);
+						closeSocket(pFileConnfd);
+						closeSocket(pPasvListenfd);
 						fileMode = NO_MODE;
 						break;
 					case PORT_MODE:
 						connectToClient(connfd, pFileConnfd, clientIp, clientPort);
 						handleStorRequest(connfd, fileConnfd, param);
-						closeFileSockets(pFileConnfd, pPasvListenfd);
+						closeSocket(pFileConnfd);
+						closeSocket(pPasvListenfd);
 						fileMode = NO_MODE;
 						break;
 					default:

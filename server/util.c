@@ -255,7 +255,7 @@ int sendFile(int connfd, char* fileName)
 int createSocket()
 {
 	int sockfd;
-	if ((sockfd = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP)) == -1) 
+	if ((sockfd = socket(PF_INET, SOCK_STREAM, IPPROTO_TCP)) == -1) 
 	{
 		printf("Error socket(): %s(%d)\n", strerror(errno), errno);
 		exit(1);
@@ -269,7 +269,7 @@ int bindSocketToServer(int sockfd, int port)
 	struct sockaddr_in addr;
 	memset(&addr, 0, sizeof(addr));
 	addr.sin_family = AF_INET;
-	addr.sin_port = port;
+	addr.sin_port = htons(port);
 	addr.sin_addr.s_addr = htonl(INADDR_ANY);
 	if (bind(sockfd, (struct sockaddr*)&addr, sizeof(addr)) == -1) 
 	{
@@ -301,18 +301,14 @@ int startSocketListening(int sockfd, int maxQueueLength)
 	return 1;
 }
 
-void closeFileSockets(int* pFileConnfd, int* pPasvListenfd)
+void closeSocket(int* pSockfd)
 {
-	if(*pFileConnfd != -1)
+	if(*pSockfd > 0)
 	{
-		close(*pFileConnfd);
-		*pFileConnfd = -1;
+		close(*pSockfd);
+		*pSockfd= -1;
 	}
-	if(*pPasvListenfd != -1)
-	{
-		close(*pPasvListenfd);
-		*pPasvListenfd = -1;
-	}
+
 }
 
 //从命令行获取参数，错误返回-1，正确返回1

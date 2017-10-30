@@ -45,7 +45,7 @@ int createSocket();
 int bindSocketToServer(int sockfd, int port);
 int setSocketOption(int sockfd);
 int startSocketListening(int sockfd, int maxQueueLength);
-void closeFileSockets(int* pFileConnfd, int* pPasvListenfd);
+void closeSocket(int* pSockfd);
 int sendConnectRequest(int sockfd, char* serverIp, int serverPort);
 
 int getParamsFromCli(int argc, char**argv);
