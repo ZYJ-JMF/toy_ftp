@@ -184,6 +184,13 @@ int handleRetrRequest(int connfd, int fileConnfd, char* param, char* pWorkingDir
 	else
 		return -1;
 }
+
+//TODO:handle list request
+int handleListRequest(int connfd, int fileConnfd, char* param, char* pWorkingDir)
+{
+	return 1;
+}
+
 int connectToClient(int connfd, int* pFileConnfd, char* clientIp, int clientPort)
 {
 	*pFileConnfd = createSocket();
@@ -200,7 +207,9 @@ int handleMkdRequest(int connfd, char* param, char* pWorkingDir)
 		return -1;
 	}
 	char filePath[200];
+	memset(filePath, 0, strlen(filePath));
 	makeAbsolutePath(filePath, pWorkingDir, param);
+	printf("File path is %s\n", filePath);
 	DIR* dir = opendir(filePath);
 	if(dir)
 	{
@@ -210,7 +219,7 @@ int handleMkdRequest(int connfd, char* param, char* pWorkingDir)
 	}
 	else if(mkdir(filePath, 0777) == -1)
 	{
-		printf("Wrong path.\n");ı
+		printf("Wrong path.\n");
 		sendMsg(connfd, mkdFailError);
 		return -1;
 	}
@@ -235,11 +244,13 @@ int handleRmdRequest(int connfd, char* param, char* pWorkingDir)
 		return -1;
 	}
 	char filePath[200];
+	memset(filePath, 0, strlen(filePath));
 	makeAbsolutePath(filePath, pWorkingDir, param);
+	printf("File path is %s\n", filePath);
 	int status = rmdir(filePath);
 	if(status == -1)
 	{
-		fprintf(stderr, "Removal failed.\n");
+		printf("Removal failed.\n");
 		sendMsg(connfd, rmdFailError);
 		return -1;
 	}
@@ -258,9 +269,11 @@ int handleRmdRequest(int connfd, char* param, char* pWorkingDir)
 
 int handleCwdRequest(int connfd, char* param, char* pWorkingDir)
 {
+	printf("handling cwd request.\n");
 	DIR* dir = opendir(param);
 	if(!dir)
 	{
+		printf("Change directory failed.\n");
 		sendMsg(connfd, cwdFailError);
 		return -1;
 	}
@@ -268,7 +281,7 @@ int handleCwdRequest(int connfd, char* param, char* pWorkingDir)
 	{
 		memset(pWorkingDir, 0, strlen(pWorkingDir));
 		strcpy(pWorkingDir, param);
-		printf("now working dir is %s", pWorkingDir);
+		printf("now working dir is %s\n", pWorkingDir);
 		char cwdSuccessMsg[100];
 		char endOfLine[10] = "\r\n";
 		strcat(cwdSuccessMsg, cwdSuccessMsgPart);

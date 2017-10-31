@@ -21,6 +21,7 @@ void serveOneClient(int connfd)
 	//port模式使用
 	char clientIp[8192];
 	int clientPort = -1;
+	int* pClientPort = &clientPort;
 
 	//连接客户端的socket,两模式共用
 	int fileConnfd = -1;  
@@ -65,23 +66,22 @@ void serveOneClient(int connfd)
 			}
 			else if(strcmp(command, "SYST") == 0)
 				handleSystRequest(connfd, param);
-
 			else if(strcmp(command, "TYPE") == 0)
 				handleTypeRequest(connfd, param);
-
+			else if(strcmp(command, "MKD") == 0)
+				handleMkdRequest(connfd, param, pWorkingDir);
+			else if(strcmp(command, "RMD") == 0)
+				handleRmdRequest(connfd, param, pWorkingDir);
+			else if(strcmp(command, "CWD") == 0)
+				handleCwdRequest(connfd, param, pWorkingDir);
 			else if(strcmp(command, "PORT") == 0)
 			{
 				closeSocket(pFileConnfd);
 				closeSocket(pPasvListenfd);
-				int* pClientPort = &clientPort;
 				if(handlePortRequest(connfd, param, clientIp, pClientPort) == 1)
-				{
 					fileMode = PORT_MODE;
-				}
 				else
-				{
 					sendMsg(connfd, portSyntaxError);
-				}
 			}
 			else if(strcmp(command, "PASV") == 0)
 			{
@@ -89,9 +89,7 @@ void serveOneClient(int connfd)
 				closeSocket(pFileConnfd);
 				closeSocket(pPasvListenfd);
 				if(handlePasvRequest(connfd, param, pPasvListenfd) == 1)
-				{
 					fileMode = PASV_MODE;
-				}
 				if ((fileConnfd = accept(pasvListenfd, NULL, NULL)) == -1)
 				{
 					printf("Error accept(): %s(%d)\n", strerror(errno), errno);
@@ -100,58 +98,53 @@ void serveOneClient(int connfd)
 			}
 			else if(strcmp(command, "RETR") == 0)
 			{
-				switch(fileMode)
+				if(fileMode == NO_MODE)
+					sendMsg(connfd, noPortError);
+				else
 				{
-					case PASV_MODE:
-						handleRetrRequest(connfd, fileConnfd, param, pWorkingDir);
-						closeSocket(pFileConnfd);
-						closeSocket(pPasvListenfd);
-						fileMode = NO_MODE;
-						break;
-					case PORT_MODE:
+					if(fileMode == PORT_MODE)
 						connectToClient(connfd, pFileConnfd, clientIp, clientPort);
-						handleRetrRequest(connfd, fileConnfd, param, pWorkingDir);
-						closeSocket(pFileConnfd);
-						closeSocket(pPasvListenfd);
-						fileMode = NO_MODE;
-						break;
-					default:
-						sendMsg(connfd, noPortError);
-						break;
+					isTransferring = 1;
+					handleRetrRequest(connfd, fileConnfd, param, pWorkingDir);
+					closeSocket(pFileConnfd);
+					closeSocket(pPasvListenfd);
+					isTransferring = -1;
+					fileMode = NO_MODE;
 				}
 			}
 			else if(strcmp(command, "STOR") == 0)
 			{
-				switch(fileMode)
+				if(fileMode == NO_MODE)
+					sendMsg(connfd, noPortError);
+				else
 				{
-					case PASV_MODE:
-						handleStorRequest(connfd, fileConnfd, param, pWorkingDir);
-						closeSocket(pFileConnfd);
-						closeSocket(pPasvListenfd);
-						fileMode = NO_MODE;
-						break;
-					case PORT_MODE:
+					if(fileMode == PORT_MODE)
 						connectToClient(connfd, pFileConnfd, clientIp, clientPort);
-						handleStorRequest(connfd, fileConnfd, param, pWorkingDir);
-						closeSocket(pFileConnfd);
-						closeSocket(pPasvListenfd);
-						fileMode = NO_MODE;
-						break;
-					default:
-						sendMsg(connfd, noPortError);
-						break;
+					isTransferring = 1;
+					handleStorRequest(connfd, fileConnfd, param, pWorkingDir);
+					closeSocket(pFileConnfd);
+					closeSocket(pPasvListenfd);
+					isTransferring = -1;
+					fileMode = NO_MODE;
 				}
 			}
-			else if(strcmp(command, "MKD") == 0)
+
+			else if(strcmp(command, "LIST") == 0)
 			{
-				handleMkdRequest(connfd, param, pWorkingDir);
+				if(fileMode == NO_MODE)
+					sendMsg(connfd, noPortError);
+				else
+				{
+					if(fileMode == PORT_MODE)
+						connectToClient(connfd, pFileConnfd, clientIp, clientPort);
+					isTransferring = 1;
+					handleListRequest(connfd, fileConnfd, param, pWorkingDir);
+					closeSocket(pFileConnfd);
+					closeSocket(pPasvListenfd);
+					isTransferring = -1;
+					fileMode = NO_MODE;
+				}
 			}
-			else if(strcmp(command, "RMD") == 0)
-			{
-				handleRmdRequest(connfd, param, pWorkingDir);
-			}
-			else if(strcmp(command, "CWD") == 0)
-				handleCwdRequest(connfd, param, pWorkingDir);
 			else
 				sendMsg(connfd, syntaxError);
 		}

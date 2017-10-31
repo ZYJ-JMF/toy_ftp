@@ -330,9 +330,23 @@ int sendMkdRequest(int sockfd, char* param)
 }
 int sendRmdRequest(int sockfd, char* param)
 {
+	char rmdPrefix[100] = "RMD ";
+	strcat(rmdPrefix, param);
+	if(write(sockfd, rmdPrefix, strlen(rmdPrefix)) < 0)
+	{
+		printf("Error write(): %s(%d)\n", strerror(errno), errno);
+		return -1;
+	} 	
 	return 1;
 }
 int sendCwdRequest(int sockfd, char* param)
 {
+	char cwdPrefix[100] = "CWD ";
+	strcat(cwdPrefix, param);
+	if(write(sockfd, cwdPrefix, strlen(cwdPrefix)) < 0)
+	{
+		printf("Error write(): %s(%d)\n", strerror(errno), errno);
+		return -1;
+	} 	
 	return 1;
 }
