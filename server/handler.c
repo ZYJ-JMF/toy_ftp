@@ -42,6 +42,7 @@ int handleUserRequest(int connfd, char* param)
 {
 	if(strcmp(param, "anonymous") == 0)
     {
+    	printf("What is sent is\n%s\n", requirePassMsg);
 	   	if(sendMsg(connfd, requirePassMsg) == -1)
 	   		return -1;
 	   	printf("User login succeed. Send require pass msg.\n");
@@ -136,7 +137,6 @@ int handlePasvRequest(int connfd, char* param, int* psockfd)
 }
 
 //TODO:处理错误情况
-//TODO:当param中有".."时拒绝请求
 int handleStorRequest(int connfd, int fileConnfd, char* param, char* pWorkingDir)
 {
 	if(checkPath(param) == -1)
@@ -290,4 +290,15 @@ int handleCwdRequest(int connfd, char* param, char* pWorkingDir)
 		sendMsg(connfd, cwdSuccessMsg);
 	}
 	return 1;	
+}
+
+int handlePwdRequest(int connfd, char* param, char* pWorkingDir)
+{
+	char pwdSuccessMsg[100];
+	char endOfLine[10] = "\r\n";
+	strcat(pwdSuccessMsg, pwdSuccessMsgPart);
+	strcat(pwdSuccessMsg, pWorkingDir);
+	strcat(pwdSuccessMsg, endOfLine);
+	sendMsg(connfd, pwdSuccessMsg);
+	return 1;
 }

@@ -13,6 +13,7 @@ extern char* loginSuccessMsg;
 extern char* mkdSuccessMsgPart;
 extern char* rmdSuccessMsgPart;
 extern char* cwdSuccessMsgPart;
+extern char* pwdSuccessMsgPart;
 
 extern char* requirePassMsg;
 

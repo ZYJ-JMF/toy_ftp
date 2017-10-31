@@ -17,6 +17,7 @@ int handlePasvRequest(int connfd, char* param, int* psockfd);
 int handleMkdRequest(int connfd, char* param, char* pWorkingDir);
 int handleRmdRequest(int connfd, char* param, char* pWorkingDir);
 int handleCwdRequest(int connfd, char* param, char* pWorkingDir);
+int handlePwdRequest(int connfd, char* param, char* pWorkingDir);
 
 int connectToClient(int connfd, int* pFileConnfd, char* clientIp, int clientPort);
 int handleStorRequest(int connfd, int fileConnfd, char* param, char* pWorkingDir);

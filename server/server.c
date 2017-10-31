@@ -62,6 +62,8 @@ void serveOneClient(int connfd)
 				hasLogedIn = -1;
 				hasInputPass = -1;
 				sendMsg(connfd, goodbyeMsg);
+				closeSocket(pFileConnfd);
+				closeSocket(pPasvListenfd);
 				break;
 			}
 			else if(strcmp(command, "SYST") == 0)
@@ -74,6 +76,8 @@ void serveOneClient(int connfd)
 				handleRmdRequest(connfd, param, pWorkingDir);
 			else if(strcmp(command, "CWD") == 0)
 				handleCwdRequest(connfd, param, pWorkingDir);
+			else if(strcmp(command, "PWD") == 0)
+				handlePwdRequest(connfd, param, pWorkingDir);
 			else if(strcmp(command, "PORT") == 0)
 			{
 				closeSocket(pFileConnfd);

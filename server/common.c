@@ -4,7 +4,7 @@ char* startTransferPart = "150 Opening BINARY mode data connection for ";
 
 char* typeMsg = "200 Type set to I.\r\n";
 char* portMsg = "200 PORT command successful.\r\n";
-char* sysStatusMsg = "215 UNIX Type: L8.\r\n";
+char* sysStatusMsg = "215 UNIX Type: L8\r\n";
 char* welcomeMsg = "220 Anonymous FTP server ready.\r\n";
 char* goodbyeMsg = "221 Goodbye.\r\n";
 char* fileSentMsg = "226 Transfer complete.\r\n";
@@ -13,6 +13,8 @@ char* loginSuccessMsg = "230 Guest login ok, access restrictions apply.\r\n";
 char* mkdSuccessMsgPart = "250 Successfully make directory ";
 char* rmdSuccessMsgPart = "250 Successfully remove directory ";
 char* cwdSuccessMsgPart = "250 Successfully change working directory to ";
+char* pwdSuccessMsgPart = "257 Current working directory is ";
+
 char* requirePassMsg = "331 Guest login ok, send your e-mail address as password.\r\n";
 
 char* cannotConnectError = "425 Can't connect to given port.\r\n";
