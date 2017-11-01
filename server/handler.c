@@ -187,7 +187,7 @@ int handleRetrRequest(int connfd, int fileConnfd, char* param, char* pWorkingDir
 	else
 	{
 		sendMsg(connfd, networkError);
-		printf("send failed.\n")
+		printf("send failed.\n");
 		return -1;
 	}
 }
