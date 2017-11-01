@@ -36,6 +36,7 @@ void makePasvPortMsg(char* pasvMsg, int pasvPort);
 void makeAbsolutePath(char* filePath, char* rootPath, char* fineName);
 
 //参数检查
+int checkPassParam(char* param);
 int checkPortParam(char* param);
 int checkListParam(char* param);
 //检查路径中是否包含../

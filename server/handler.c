@@ -187,7 +187,7 @@ int handleRetrRequest(int connfd, int fileConnfd, char* param, char* pWorkingDir
 	else
 	{
 		sendMsg(connfd, networkError);
-		printf("send failed.\n")
+		printf("send failed.\n");
 		return -1;
 	}
 }
@@ -317,6 +317,7 @@ int handleMkdRequest(int connfd, char* param, char* pWorkingDir)
 	{
 		printf("succeed in creating directory.\n");
 		char mkdSuccessMsg[100];
+		memset(mkdSuccessMsg, 0, strlen(mkdSuccessMsg));
 		char endOfLine[10] = "\r\n";
 		strcat(mkdSuccessMsg, mkdSuccessMsgPart);
 		strcat(mkdSuccessMsg, filePath);
@@ -348,6 +349,7 @@ int handleRmdRequest(int connfd, char* param, char* pWorkingDir)
 	{
 		printf("Removal succeed.\n");
 		char rmdSuccessMsg[100];
+		memset(rmdSuccessMsg, 0, strlen(rmdSuccessMsg));
 		char endOfLine[10] = "\r\n";
 		strcat(rmdSuccessMsg, rmdSuccessMsgPart);
 		strcat(rmdSuccessMsg, filePath);
@@ -359,7 +361,6 @@ int handleRmdRequest(int connfd, char* param, char* pWorkingDir)
 
 int handleCwdRequest(int connfd, char* param, char* pWorkingDir)
 {
-	printf("handling cwd request.\n");
 	DIR* dir = opendir(param);
 	if(!dir)
 	{
@@ -369,11 +370,12 @@ int handleCwdRequest(int connfd, char* param, char* pWorkingDir)
 	}
 	else
 	{
+		char cwdSuccessMsg[100];
+		char endOfLine[10] = "\r\n";
+		memset(cwdSuccessMsg, 0, strlen(cwdSuccessMsg));
 		memset(pWorkingDir, 0, strlen(pWorkingDir));
 		strcpy(pWorkingDir, param);
 		printf("now working dir is %s\n", pWorkingDir);
-		char cwdSuccessMsg[100];
-		char endOfLine[10] = "\r\n";
 		strcat(cwdSuccessMsg, cwdSuccessMsgPart);
 		strcat(cwdSuccessMsg, param);
 		strcat(cwdSuccessMsg, endOfLine);
@@ -385,6 +387,7 @@ int handleCwdRequest(int connfd, char* param, char* pWorkingDir)
 int handlePwdRequest(int connfd, char* param, char* pWorkingDir)
 {
 	char pwdSuccessMsg[100];
+	memset(pwdSuccessMsg, 0, strlen(pwdSuccessMsg));
 	char endOfLine[10] = "\r\n";
 	strcat(pwdSuccessMsg, pwdSuccessMsgPart);
 	strcat(pwdSuccessMsg, pWorkingDir);

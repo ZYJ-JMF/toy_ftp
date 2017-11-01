@@ -4,6 +4,7 @@ int sendConnectRequest(int sockfd, char* serverIp, int serverPort)
 {
 	struct sockaddr_in addr;
 	char response[1000];
+	memset(response, 0, strlen(response));
 	memset(&addr, 0, sizeof(addr));
 	addr.sin_family = AF_INET;
 	addr.sin_port = htons(serverPort);
@@ -21,6 +22,7 @@ int sendUserRequest(int sockfd, char* user)
 {
 	char userPrefix[100] = "USER ";
 	char response[1000];
+	memset(response, 0, strlen(response));
 	strcat(userPrefix, user);
 	if(write(sockfd, userPrefix, strlen(userPrefix)) < 0)
 	{
@@ -35,6 +37,7 @@ int sendPassRequest(int sockfd, char*password)
 {
 	char passPrefix[100] = "PASS ";
 	char response[1000];
+	memset(response, 0, strlen(response));
 	strcat(passPrefix, password);
 	if(write(sockfd, passPrefix, strlen(passPrefix)) < 0)
 	{

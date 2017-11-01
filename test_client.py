@@ -12,7 +12,7 @@ ftp = FTP()
 credit = 40
 minor = 3
 major = 8
-
+'''
 def create_test_file(filename):
     f = open(filename, 'wb')
     for i in range(10000):
@@ -69,12 +69,12 @@ def test(port=6789, directory='/Users/pingguo/Desktop/CN1_ftp/server/tmp'):
       credit -= minor
     ftp2.quit()
 test()
-# Test 2
-
-directory = ''.join(random.choice(string.ascii_letters) for x in range(10))
-if os.path.isdir(directory):
-  shutil.rmtree(directory)
-os.mkdir(directory)
-test(6789, directory)
-shutil.rmtree(directory)
+'''
+ftp = FTP()
+if not ftp.connect('127.0.0.1', 6789).startswith('220'):
+  print('You missed response 220')
+if not ftp.login().startswith('230'):
+  print('You missed response 230')
+if not ftp.pwd().startswith('257'):
+  print("You have error in pwd")
 print("success")

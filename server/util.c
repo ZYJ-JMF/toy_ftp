@@ -196,6 +196,10 @@ void makeAbsolutePath(char* filePath, char* rootPath, char* fileName)
 	strcat(filePath, fileName);
 }
 //参数检查
+int checkPassParam(char* param)
+{
+	return 1;
+}
 int checkPortParam(char* param)
 {
 	return 1;
