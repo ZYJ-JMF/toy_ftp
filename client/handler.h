@@ -10,11 +10,14 @@ int sendSystRequest(int sockfd);
 int sendTypeRequest(int sockfd);
 int sendRetrRequest(int sockfd, char* fileName);
 int sendStorRequest(int sockfd, char* fileName);
+int sendListRequest(int sockfd, char* param);
 int sendPasvRequest(int sockfd);
 int sendPortRequest(int sockfd, char* param);
 int sendMkdRequest(int sockfd, char* param);
 int sendRmdRequest(int sockfd, char* param);
 int sendCwdRequest(int sockfd, char* param);
+
+/* --------------------------------------------*/
 
 int handlePassResponse(int sockfd);
 int handleUserResponse(int sockfd);
@@ -24,6 +27,7 @@ int handleSystResponse(int sockfd);
 int handleConnectResponse(int sockfd);
 int handleStorResponse(int sockfd, int fileSockfd, char* fileName);
 int handleRetrResponse(int sockfd, int fileSockfd, char* fileName);
+int handleListResponse(int sockfd, int fileSockfd);
 int handleTypeResponse(int sockfd);
 
 int acceptConnect(int listenfd);

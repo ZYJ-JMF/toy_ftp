@@ -4,7 +4,6 @@ void serveOneClient(int connfd)
 {
 	char pWorkingDir[500];
 	strcpy(pWorkingDir, rootPath);
-
 	char sentence[8192];
 	char command[100];
 	char param[100];
@@ -143,6 +142,22 @@ void serveOneClient(int connfd)
 						connectToClient(connfd, pFileConnfd, clientIp, clientPort);
 					isTransferring = 1;
 					handleListRequest(connfd, fileConnfd, param, pWorkingDir);
+					closeSocket(pFileConnfd);
+					closeSocket(pPasvListenfd);
+					isTransferring = -1;
+					fileMode = NO_MODE;
+				}
+			}
+			else if(strcmp(command, "NLST") == 0)
+			{
+				if(fileMode == NO_MODE)
+					sendMsg(connfd, noPortError);
+				else
+				{
+					if(fileMode == PORT_MODE)
+						connectToClient(connfd, pFileConnfd, clientIp, clientPort);
+					isTransferring = 1;
+					handleNlstRequest(connfd, fileConnfd, param, pWorkingDir);
 					closeSocket(pFileConnfd);
 					closeSocket(pPasvListenfd);
 					isTransferring = -1;

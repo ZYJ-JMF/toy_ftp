@@ -1,10 +1,4 @@
-#include"common.h"
-#include"handler.h"
-#include"util.h"
-
-#define NO_MODE 0
-#define PASV_MODE 1
-#define PORT_MODE 2
+#include "client.h"
 
 int main(int argc, char **argv) 
 {
@@ -76,6 +70,12 @@ int main(int argc, char **argv)
 				continue;
 			if(handleTypeResponse(sockfd) == -1)
 				continue;
+		}
+		else if(strcmp(command, "LIST") == 0)
+		{
+			if(sendListRequest(sockfd, param) == -1)
+				continue;
+
 		}
 		else if(strcmp(command, "STOR") == 0)
 		{

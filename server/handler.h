@@ -23,3 +23,4 @@ int connectToClient(int connfd, int* pFileConnfd, char* clientIp, int clientPort
 int handleStorRequest(int connfd, int fileConnfd, char* param, char* pWorkingDir);
 int handleRetrRequest(int connfd, int fileConnfd, char* param, char* pWorkingDir);
 int handleListRequest(int connfd, int fileConnfd, char* param, char* pWorkingDir);
+int handleNlstRequest(int connfd, int fileConnfd, char* param, char* pWorkingDir);

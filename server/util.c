@@ -118,6 +118,8 @@ int getPortFromPortMsg(char* param, int* pClientPort)
 //从sentence中得到前面的command和parameter,出错返回-1
 int getCommandFromSentence(char* sentence, char* command, char* parameter)
 {
+	memset(command, 0, strlen(command));
+	memset(parameter, 0, strlen(parameter));	
 	int len = strlen(sentence);
 	int spacePos = -1;
 	for(int i = 0; i < len; i++)
@@ -178,6 +180,7 @@ void makePasvPortMsg(char* pasvMsg, int pasvPort)
 
 void makeStartTransferMsg(char* startTransferMsg, char* fileName)
 {
+	memset(startTransferMsg, 0, strlen(startTransferMsg));
 	char endOfLine[10] = "\r\n";
 	startTransferMsg[0] = '\0';
 	strcat(startTransferMsg, startTransferPart);
@@ -197,7 +200,10 @@ int checkPortParam(char* param)
 {
 	return 1;
 }
-
+int checkListParam(char* param)
+{
+	return 1;
+}
 int checkPath(char* path)
 {
 	const char pattern[10] = "..";
@@ -252,6 +258,7 @@ int recvFile(int connfd, char* fileName)
 	fclose(f);
 	return 1;
 }
+
 int sendFile(int connfd, char* fileName)
 {
 	FILE * f = fopen(fileName, "rb");
@@ -267,7 +274,178 @@ int sendFile(int connfd, char* fileName)
 	return 1;
 }
 
+int sendDirectoryInfo(int fileConnfd, char* directoryPath, char* listData)
+{
+	char blank[2] = " ";
+	char endOfLine[10] = "\r\n";
+	char regFilePrefix[100] = "rw-r--r-- 1 owner group       ";
+	char dirPrefix[100] = "rwxr-xr-x 1 owner group        ";
+	DIR* dir;
+	struct dirent* ptr;
+	struct stat statbuf;
+	dir = opendir(directoryPath);
+	ptr = readdir(dir);
+	while(ptr)
+	{
+		if(strcmp(ptr -> d_name, ".") == 0 || strcmp(ptr -> d_name, "..") == 0)
+		{
+			ptr = readdir(dir);
+			continue;
+		}
+		char fileAbsolutePath[100];
+		memset(fileAbsolutePath, 0, strlen(fileAbsolutePath));
+		makeAbsolutePath(fileAbsolutePath, directoryPath, ptr -> d_name);
+		if(stat(fileAbsolutePath, &statbuf) == -1)
+		{
+			printf("Error read file(): %s(%d)\n", strerror(errno), errno);
+			return -1;
+		}
+		//file
+		if(ptr -> d_type == 8)
+		{
+			char fileInfo[300];
+			char sizeStr[100];
+			char timeStr[100];
+			time_t rawTime;
+			struct tm *pTime;
+			memset(fileInfo, 0, strlen(fileInfo));
+			memset(sizeStr, 0, strlen(sizeStr));
+			memset(timeStr, 0, strlen(timeStr));
+			strcat(fileInfo, regFilePrefix);
+			intToString(statbuf.st_size, sizeStr);
+			strcat(fileInfo, sizeStr);
+			strcat(fileInfo, blank);
+			rawTime = statbuf.st_mtime;
+			pTime = localtime(&rawTime);
+			strftime(timeStr, 100, "%b %d %H:%M", pTime);
+			strcat(fileInfo, timeStr);
+			strcat(fileInfo, blank);
+			strcat(fileInfo, ptr -> d_name);
+			strcat(fileInfo, endOfLine);
+			strcat(listData, fileInfo);
+		}
+		//dir
+		else if(ptr -> d_type == 4)
+		{
+			char fileInfo[300];
+			char timeStr[100];
+			time_t rawTime;
+			struct tm *pTime;
+			memset(fileInfo, 0, strlen(fileInfo));
+			memset(timeStr, 0, strlen(timeStr));
+			strcat(fileInfo, dirPrefix);
+			rawTime = statbuf.st_mtime;
+			pTime = localtime(&rawTime);
+			strftime(timeStr, 100, "%b %d %H:%M", pTime);
+			strcat(fileInfo, timeStr);
+			strcat(fileInfo, blank);
+			strcat(fileInfo, ptr -> d_name);
+			strcat(fileInfo, endOfLine);
+			strcat(listData, fileInfo);
+		}
+		ptr = readdir(dir);
+	}
+	return 1;
+}
 
+int sendFileInfo(int fileConnfd, char* filePath, char* fileName, char* listData)
+{
+	char blank[2] = " ";
+	char endOfLine[10] = "\r\n";
+	char regFilePrefix[100] = "rw-r--r-- 1 owner group       ";
+	struct stat statbuf;
+	if(stat(filePath, &statbuf) == -1)
+	{
+		printf("Error read file(): %s(%d)\n", strerror(errno), errno);
+		return -1;
+	}
+	char fileInfo[300];
+	char sizeStr[100];
+	char timeStr[100];
+	time_t rawTime;
+	struct tm *pTime;
+	memset(fileInfo, 0, strlen(fileInfo));
+	memset(sizeStr, 0, strlen(sizeStr));
+	memset(timeStr, 0, strlen(timeStr));
+	strcat(fileInfo, regFilePrefix);
+	intToString(statbuf.st_size, sizeStr);
+	strcat(fileInfo, sizeStr);
+	strcat(fileInfo, blank);
+	rawTime = statbuf.st_mtime;
+	pTime = localtime(&rawTime);
+	strftime(timeStr, 100, "%b %d %H:%M", pTime);
+	strcat(fileInfo, timeStr);
+	strcat(fileInfo, blank);
+	strcat(fileInfo, fileName);
+	strcat(fileInfo, endOfLine);
+	strcat(listData, fileInfo);
+	return 1;
+}
+
+int sendDirectoryInfoSimple(int fileConnfd, char* directoryPath, char* listData)
+{
+	char blank[2] = " ";
+	char endOfLine[10] = "\r\n";
+	DIR* dir;
+	struct dirent* ptr;
+	struct stat statbuf;
+	dir = opendir(directoryPath);
+	ptr = readdir(dir);
+	while(ptr)
+	{
+		if(strcmp(ptr -> d_name, ".") == 0 || strcmp(ptr -> d_name, "..") == 0)
+		{
+			ptr = readdir(dir);
+			continue;
+		}
+		char fileAbsolutePath[100];
+		memset(fileAbsolutePath, 0, strlen(fileAbsolutePath));
+		makeAbsolutePath(fileAbsolutePath, directoryPath, ptr -> d_name);
+		if(stat(fileAbsolutePath, &statbuf) == -1)
+		{
+			printf("Error read file(): %s(%d)\n", strerror(errno), errno);
+			return -1;
+		}
+		//file
+		if(ptr -> d_type == 8)
+		{
+			char fileInfo[300];
+			memset(fileInfo, 0, strlen(fileInfo));
+			strcat(fileInfo, ptr -> d_name);
+			strcat(fileInfo, endOfLine);
+			strcat(listData, fileInfo);
+		}
+		//dir
+		else if(ptr -> d_type == 4)
+		{
+			char fileInfo[300];
+			memset(fileInfo, 0, strlen(fileInfo));
+			strcat(fileInfo, ptr -> d_name);
+			strcat(fileInfo, endOfLine);
+			strcat(listData, fileInfo);
+		}
+		ptr = readdir(dir);
+	}
+	return 1;
+}
+
+int sendFileInfoSimple(int fileConnfd, char* filePath, char* fileName, char* listData)
+{
+	char blank[2] = " ";
+	char endOfLine[10] = "\r\n";
+	struct stat statbuf;
+	if(stat(filePath, &statbuf) == -1)
+	{
+		printf("Error read file(): %s(%d)\n", strerror(errno), errno);
+		return -1;
+	}
+	char fileInfo[300];
+	memset(fileInfo, 0, strlen(fileInfo));
+	strcat(fileInfo, fileName);
+	strcat(fileInfo, endOfLine);
+	strcat(listData, fileInfo);
+	return 1;
+}
 //建立新的socket，返回该socket的描述符
 int createSocket()
 {
@@ -328,7 +506,6 @@ void closeSocket(int* pSockfd)
 
 }
 
-//从命令行获取参数，错误返回-1，正确返回1
 //TODO:非法命令的处理
 int getParamsFromCli(int argc, char**argv)
 {
@@ -365,13 +542,14 @@ int getParamsFromCli(int argc, char**argv)
 	return 1;
 }
 
-int sendConnectRequest(int sockfd, char* serverIp, int serverPort)
+int sendConnectRequest(int sockfd, char* targetIp, int serverPort)
 {
 	struct sockaddr_in addr;
 	char response[1000];
 	memset(&addr, 0, sizeof(addr));
 	addr.sin_family = AF_INET;
-	addr.sin_port = serverPort;
+	addr.sin_port = htons(serverPort);
+	//addr.sin_addr.s_addr = targetIp;
 	if (connect(sockfd, (struct sockaddr*)&addr, sizeof(addr)) < 0)
 	{
 		printf("Error connect(): %s(%d)\n", strerror(errno), errno);

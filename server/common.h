@@ -2,12 +2,14 @@
 
 //服务器的回复字符串
 extern char* startTransferPart;
-extern char* typeMsg;
+extern char* typeIMsg;
+extern char* typeAMsg;
 extern char* portMsg;
 extern char* sysStatusMsg;
 extern char* welcomeMsg;
 extern char* goodbyeMsg;
 extern char* fileSentMsg;
+extern char* directorySentMsg;
 extern char* pasvMsgPart;
 extern char* loginSuccessMsg;
 extern char* mkdSuccessMsgPart;
@@ -20,6 +22,7 @@ extern char* requirePassMsg;
 extern char* cannotConnectError;
 extern char* noPortError;
 extern char* networkError;
+extern char* readDirError;
 
 extern char* syntaxError;
 extern char* typeError;

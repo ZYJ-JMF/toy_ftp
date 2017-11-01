@@ -14,6 +14,7 @@
 #include <getopt.h>
 #include <regex.h>
 #include <dirent.h>
+#include <time.h>
 
 #include "common.h"
 
@@ -36,6 +37,7 @@ void makeAbsolutePath(char* filePath, char* rootPath, char* fineName);
 
 //参数检查
 int checkPortParam(char* param);
+int checkListParam(char* param);
 //检查路径中是否包含../
 int checkPath(char* path);
 
@@ -44,7 +46,10 @@ int recvSentence(int connfd, char* sentence);
 int sendMsg(int connfd, char* sentence);
 int recvFile(int connfd, char* fileName);
 int sendFile(int connfd, char* fileName);
-
+int sendDirectoryInfo(int fileConnfd, char* directoryPath, char* listData);
+int sendFileInfo(int fileConnfd, char* filePath, char* fileName,char* listData);
+int sendDirectoryInfoSimple(int fileConnfd, char* directoryPath, char* listData);
+int sendFileInfoSimple(int fileConnfd, char* filePath, char* fileName,char* listData);
 //socket相关
 int createSocket();
 int bindSocketToServer(int sockfd, int port);

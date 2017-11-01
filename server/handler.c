@@ -1,6 +1,5 @@
 #include "handler.h"
 
-
 int handleFirstConnectRequest(int connfd)
 {
 	if(sendMsg(connfd, welcomeMsg) == 1)
@@ -36,7 +35,6 @@ int parseInputSentence(char* sentence, char* command, char* param)
     return 1;
 }
 
-//登录成功返回1，失败返回-1
 //TODO:建立用户表
 int handleUserRequest(int connfd, char* param)
 {
@@ -56,7 +54,6 @@ int handleUserRequest(int connfd, char* param)
 	}
 }
 
-//TODO:检查密码格式
 int handlePassRequest(int connfd, char* param)
 {
 	if(sendMsg(connfd, loginSuccessMsg) == -1)
@@ -76,7 +73,12 @@ int handleTypeRequest(int connfd, char* param)
 {
 	if(strcmp(param, "I") == 0)
 	{
-		sendMsg(connfd, typeMsg);
+		sendMsg(connfd, typeIMsg);
+		return -1;
+	}
+	else if(strcmp(param, "A") == 0)
+	{
+		sendMsg(connfd, typeAMsg);
 		return -1;
 	}
 	else if(strcmp(param, "") == 0)
@@ -185,12 +187,93 @@ int handleRetrRequest(int connfd, int fileConnfd, char* param, char* pWorkingDir
 		return -1;
 }
 
-//TODO:handle list request
 int handleListRequest(int connfd, int fileConnfd, char* param, char* pWorkingDir)
 {
+	char listTargetPath[100];
+	memset(listTargetPath, 0, strlen(listTargetPath));
+	if(param[0] == '\0')
+		strcpy(listTargetPath, pWorkingDir);
+	else
+		makeAbsolutePath(listTargetPath, pWorkingDir, param);
+	if(checkListParam(listTargetPath) == 0)
+	{
+		return -1;
+	}
+	char listData[8192];
+	memset(listData, 0, strlen(listData));
+	char startTransferMsg[400];
+	makeStartTransferMsg(startTransferMsg, listTargetPath);
+	sendMsg(connfd, startTransferMsg);
+
+	DIR* dir;
+	dir = opendir(listTargetPath);
+	//根据是文件还是目录传送不同数据
+	if(dir != NULL)
+	{
+		if(sendDirectoryInfo(fileConnfd, listTargetPath, listData) == -1)
+		{
+			sendMsg(connfd, invalidPathError);
+			return -1;
+		}
+		else
+			sendMsg(fileConnfd, listData);
+	}
+	else
+	{
+		if(sendFileInfo(fileConnfd, listTargetPath, param, listData) == -1)
+		{
+			sendMsg(connfd, invalidPathError);
+			return -1;
+		}
+		else
+			sendMsg(fileConnfd, listData);
+	}
 	return 1;
 }
 
+int handleNlstRequest(int connfd, int fileConnfd, char* param, char* pWorkingDir)
+{
+	char listTargetPath[100];
+	memset(listTargetPath, 0, strlen(listTargetPath));
+	if(param[0] == '\0')
+		strcpy(listTargetPath, pWorkingDir);
+	else
+		makeAbsolutePath(listTargetPath, pWorkingDir, param);
+	if(checkListParam(listTargetPath) == 0)
+	{
+		return -1;
+	}
+	char listData[8192];
+	memset(listData, 0, strlen(listData));
+	char startTransferMsg[400];
+	makeStartTransferMsg(startTransferMsg, listTargetPath);
+	sendMsg(connfd, startTransferMsg);
+
+	DIR* dir;
+	dir = opendir(listTargetPath);
+	//根据是文件还是目录传送不同数据
+	if(dir != NULL)
+	{
+		if(sendDirectoryInfoSimple(fileConnfd, listTargetPath, listData) == -1)
+		{
+			sendMsg(connfd, invalidPathError);
+			return -1;
+		}
+		else
+			sendMsg(fileConnfd, listData);
+	}
+	else
+	{
+		if(sendFileInfoSimple(fileConnfd, listTargetPath, param, listData) == -1)
+		{
+			sendMsg(connfd, invalidPathError);
+			return -1;
+		}
+		else
+			sendMsg(fileConnfd, listData);
+	}
+	return 1;
+}
 int connectToClient(int connfd, int* pFileConnfd, char* clientIp, int clientPort)
 {
 	*pFileConnfd = createSocket();

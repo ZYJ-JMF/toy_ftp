@@ -30,6 +30,8 @@ void removeLineFeed(char* sentence)
 //从sentence中得到前面的command和parameter,出错返回-1
 int getCommandFromSentence(char* sentence, char* command, char* parameter)
 {
+	memset(command, 0, strlen(command));
+	memset(parameter, 0, strlen(parameter));
 	int len = strlen(sentence);
 	int spacePos = -1;
 	for(int i = 0; i < len; i++)
