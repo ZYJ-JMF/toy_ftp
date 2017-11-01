@@ -40,25 +40,26 @@ int handleUserRequest(int connfd, char* param)
 {
 	if(strcmp(param, "anonymous") == 0)
     {
-    	printf("What is sent is\n%s\n", requirePassMsg);
 	   	if(sendMsg(connfd, requirePassMsg) == -1)
 	   		return -1;
-	   	printf("User login succeed. Send require pass msg.\n");
 	   	return 1;
 	}
 	else
 	{
 	    sendMsg(connfd, unknownUserError);
-	    printf("Error: unknown user.\n");
 	    return -1;
 	}
 }
 
 int handlePassRequest(int connfd, char* param)
 {
+	if(checkPassParam(param) == -1)
+	{
+		sendMsg(connfd, typeError);
+		return -1;
+	}
 	if(sendMsg(connfd, loginSuccessMsg) == -1)
 		return -1;
-	printf("password succeed.\n");
 	return 1;
 }
 
@@ -184,7 +185,11 @@ int handleRetrRequest(int connfd, int fileConnfd, char* param, char* pWorkingDir
 		return 1;
 	}
 	else
+	{
+		sendMsg(connfd, networkError);
+		printf("send failed.\n")
 		return -1;
+	}
 }
 
 int handleListRequest(int connfd, int fileConnfd, char* param, char* pWorkingDir)
@@ -228,6 +233,7 @@ int handleListRequest(int connfd, int fileConnfd, char* param, char* pWorkingDir
 		else
 			sendMsg(fileConnfd, listData);
 	}
+	sendMsg(connfd, fileSentMsg);
 	return 1;
 }
 
@@ -272,6 +278,7 @@ int handleNlstRequest(int connfd, int fileConnfd, char* param, char* pWorkingDir
 		else
 			sendMsg(fileConnfd, listData);
 	}
+	sendMsg(connfd, fileSentMsg);
 	return 1;
 }
 int connectToClient(int connfd, int* pFileConnfd, char* clientIp, int clientPort)
