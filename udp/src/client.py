@@ -1,15 +1,25 @@
 import socket
+import os
+
+server_ip = "localhost"
+server_port = 9876
 
 size = 8192
 
-for i in range(0, 51):
-    try:
-        msg = str(i).encode('utf-8')
-        sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-        sock.sendto(msg, ('localhost', 9876))
-        print(sock.recv(size))
-        sock.close()
+sock_send = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+pid = os.fork()
 
-    except Exception as e:
-        print(e)
-        print("cannot reach the server")
+if pid == 0:
+    for i in range(0, 51):
+        try:
+            msg = str(i).encode('utf-8')
+            sock_send.sendto(msg, (server_ip, server_port))
+        except Exception as e:
+            print(e)
+else:
+    while True: 
+        print(sock_send.recv(size))
+    sock_listen.close()
+    sock_send.close()
+
+
