@@ -104,7 +104,7 @@ void getIPFromPasvResponse(char* response, char* serverIp)
 			break;
 		serverIp[j - i - 1] = response[j];
 	}
-	serverIp[j - i + 1] = '\0';
+	serverIp[j - i - 1] = '\0';
 	strreplace(serverIp, ',', '.');
 }
 
@@ -189,7 +189,6 @@ int recvFile(int connfd, char* fileName)
 	while(1)
 	{
 		size = read(connfd, buffer, 8191);
-		printf("recv %d bytes.\n", size);
 		if(size <= 0)
 			break;
 		fwrite(buffer, 1, size, f);
@@ -211,7 +210,6 @@ int sendFile(int connfd, char* fileName)
 		if(size <= 0)
 			break;
 		send(connfd, buffer, size, 0);
-		printf("send %d bytes.\n", size);
 	}
 	return 1;
 }
@@ -228,7 +226,7 @@ int createSocket()
 	return sockfd;
 }
 
-int bindSocketToServer(int sockfd, int port)
+int bindSocket(int sockfd, int port)
 {
 	struct sockaddr_in addr;
 	memset(&addr, 0, sizeof(addr));

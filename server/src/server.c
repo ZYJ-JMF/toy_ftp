@@ -3,10 +3,15 @@
 void serveOneClient(int connfd)
 {
 	char pWorkingDir[500];
+	memset(pWorkingDir, 0, strlen(pWorkingDir));
 	strcpy(pWorkingDir, rootPath);
 	char sentence[8192];
 	char command[100];
 	char param[100];
+	memset(sentence, 0, strlen(sentence));
+	memset(command, 0, strlen(command));
+	memset(param, 0, strlen(param));
+
 	int hasLogedIn = -1; //是否登录，登录为1，未登录为-1
 	int hasInputPass = -1; //是否给出密码
 	int isTransferring = -1; //是否正在传输文件
@@ -19,6 +24,7 @@ void serveOneClient(int connfd)
 
 	//port模式使用
 	char clientIp[8192];
+	memset(clientIp, 0, strlen(clientIp));
 	int clientPort = -1;
 	int* pClientPort = &clientPort;
 

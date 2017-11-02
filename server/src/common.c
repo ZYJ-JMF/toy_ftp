@@ -37,6 +37,6 @@ char* rmdFailError = "550 Removal failed.\r\n";
 char* cwdFailError = "550 Change directory failed.\r\n";
 
 //服务器的配置
-int port = 6789; 
-char rootPath[1000] = "/Users/pingguo/Desktop/CN1_ftp/server/src/tmp";
+int port = 21; 
+char rootPath[1000] = "/tmp";
 char serverIp[100] = "127.0.0.1";

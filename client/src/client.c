@@ -93,7 +93,10 @@ int main(int argc, char **argv)
 	char sentence[8192];
 	char command[10];
 	char param[100];
-
+	memset(sentence, 0, strlen(sentence));
+	memset(command, 0, strlen(command));
+	memset(param, 0, strlen(param));
+	
 	int transferMode = NO_MODE;
 	sockfd = createSocket();
 	if(sendConnectRequest(sockfd, serverIp, serverPort) == -1)

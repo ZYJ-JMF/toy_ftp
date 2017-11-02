@@ -54,7 +54,6 @@ int getIpFromPortMsg(char* param, char* clientIp)
 	{
 		if(param[i] == '\0')
 		{
-			printf("format error.\n");
 			return -1;
 		}
 		if(counter == 4)
@@ -95,6 +94,8 @@ int getPortFromPortMsg(char* param, int* pClientPort)
 	int p2;
 	char p1c[10];
 	char p2c[10];
+	memset(p1c, 0, strlen(p1c));
+	memset(p2c, 0, strlen(p2c));
 	for(j = 1; param[i + j] != ','; j++)
 	{
 		p1c[j - 1] = param[i + j];
@@ -184,7 +185,6 @@ void makeStartTransferMsg(char* startTransferMsg, char* fileName)
 {
 	memset(startTransferMsg, 0, strlen(startTransferMsg));
 	char endOfLine[10] = "\r\n";
-	startTransferMsg[0] = '\0';
 	strcat(startTransferMsg, startTransferPart);
 	strcat(startTransferMsg, fileName);
 	strcat(startTransferMsg, endOfLine);
@@ -248,6 +248,7 @@ int recvFile(int connfd, char* fileName)
 {
 	FILE* f = fopen(fileName, "wb");
 	char buffer[8192];
+	memset(buffer, 0, strlen(buffer));
 	int size;
 
 	while(1)
@@ -256,10 +257,10 @@ int recvFile(int connfd, char* fileName)
 		if(size == 0)
 			break;
 		fwrite(buffer, 1, size, f);
-		printf("receive %d bytes.\n", size);
 	}
 
 	fclose(f);
+	printf("recv success.\n");
 	return 1;
 }
 
@@ -267,11 +268,12 @@ int sendFile(int connfd, char* fileName)
 {
 	FILE * f = fopen(fileName, "rb");
 	char buffer[8192];
+	memset(buffer, 0, strlen(buffer));
+
 	int size;
 	while(1)
 	{
 		size = fread(buffer, 1, 8190, f);
-		printf("send %d bytes.\n", size);
 		if(size <= 0)
 			break;
 		send(connfd, buffer, size, 0);
@@ -281,7 +283,6 @@ int sendFile(int connfd, char* fileName)
 
 int sendDirectoryInfo(int fileConnfd, char* directoryPath, char* listData)
 {
-	printf("sent directory info.\n");
 	char blank[2] = " ";
 	char endOfLine[10] = "\r\n";
 	char regFilePrefix[100] = "rw-r--r-- 1 owner group       ";
@@ -510,6 +511,23 @@ void closeSocket(int* pSockfd)
 
 }
 
+int sendConnectRequest(int sockfd, char* targetIp, int targetPort)
+{
+	struct sockaddr_in addr;
+	char response[1000];
+	memset(&addr, 0, sizeof(addr));
+	addr.sin_family = AF_INET;
+	addr.sin_port = htons(targetPort);
+	printf("target IP is %s", targetIp);
+	if(inet_pton(AF_INET, targetIp, &addr.sin_addr) <= 0)
+		return -1;
+	if (connect(sockfd, (struct sockaddr*)&addr, sizeof(addr)) < 0)
+	{
+		printf("Error connect(): %s(%d)\n", strerror(errno), errno);
+		return -1;
+	}
+	return 1;
+}
 //TODO:非法命令的处理
 int getParamsFromCli(int argc, char**argv)
 {
@@ -545,19 +563,3 @@ int getParamsFromCli(int argc, char**argv)
 	return 1;
 }
 
-int sendConnectRequest(int sockfd, char* targetIp, int targetPort)
-{
-	struct sockaddr_in addr;
-	char response[1000];
-	memset(&addr, 0, sizeof(addr));
-	addr.sin_family = AF_INET;
-	addr.sin_port = htons(targetPort);
-	printf("target IP is %s", targetIp);
-	addr.sin_addr.s_addr = inet_addr(targetIp);
-	if (connect(sockfd, (struct sockaddr*)&addr, sizeof(addr)) < 0)
-	{
-		printf("Error connect(): %s(%d)\n", strerror(errno), errno);
-		return -1;
-	}
-	return 1;
-}

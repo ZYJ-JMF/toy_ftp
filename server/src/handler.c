@@ -10,6 +10,7 @@ int handleFirstConnectRequest(int connfd)
 
 int handleInputSentence(int connfd, char* sentence)
 {
+	memset(sentence, 0, strlen(sentence));
 	if(recvSentence(connfd, sentence) < 0)
 		return -1;
     removeLineFeed(sentence);
@@ -19,8 +20,8 @@ int handleInputSentence(int connfd, char* sentence)
 
 int parseInputSentence(char* sentence, char* command, char* param)
 {
-	command[0] = '\0';
-	param[0] ='\0';
+	memset(command, 0, strlen(command));
+	memset(param, 0, strlen(param));
     if(getCommandFromSentence(sentence, command, param) < 0)
     	return -1;
     convertToUpperCase(command);
@@ -29,7 +30,6 @@ int parseInputSentence(char* sentence, char* command, char* param)
     return 1;
 }
 
-//TODO:建立用户表
 int handleUserRequest(int connfd, char* param)
 {
 	if(strcmp(param, "anonymous") == 0)
@@ -142,10 +142,12 @@ int handleStorRequest(int connfd, int fileConnfd, char* param, char* pWorkingDir
 		return -1;
 	}
 	char startTransferPasv[400];
+	memset(startTransferPasv, 0, strlen(startTransferPasv));
 	makeStartTransferMsg(startTransferPasv, param);
 	if(sendMsg(connfd, startTransferPasv) == -1)
 		return -1;
 	char filePath[300];
+	memset(filePath, 0, strlen(filePath));
 	makeAbsolutePath(filePath, pWorkingDir, param);
 	int state = recvFile(fileConnfd, filePath);
 	printf("state is %d\n", state);
@@ -167,11 +169,15 @@ int handleRetrRequest(int connfd, int fileConnfd, char* param, char* pWorkingDir
 		return -1;
 	}
 	char startTransferPasv[400];
+	memset(startTransferPasv, 0, strlen(startTransferPasv));
 	makeStartTransferMsg(startTransferPasv, param);
 	if(sendMsg(connfd, startTransferPasv) == -1)
 		return -1;
 	char filePath[300];
+	memset(filePath, 0, strlen(filePath));
 	makeAbsolutePath(filePath, pWorkingDir, param);
+	printf("working dir is %s\n", pWorkingDir);
+	printf("filePath is %s\n", filePath);
 	int state = sendFile(fileConnfd, filePath);
 	if(state == 1)
 	{
@@ -199,6 +205,7 @@ int handleListRequest(int connfd, int fileConnfd, char* param, char* pWorkingDir
 	char listData[8192];
 	memset(listData, 0, strlen(listData));
 	char startTransferMsg[400];
+	memset(startTransferMsg, 0, strlen(startTransferMsg));
 	makeStartTransferMsg(startTransferMsg, listTargetPath);
 	sendMsg(connfd, startTransferMsg);
 	
@@ -245,6 +252,7 @@ int handleNlstRequest(int connfd, int fileConnfd, char* param, char* pWorkingDir
 	char listData[8192];
 	memset(listData, 0, strlen(listData));
 	char startTransferMsg[400];
+	memset(startTransferMsg, 0, strlen(startTransferMsg));
 	makeStartTransferMsg(startTransferMsg, listTargetPath);
 	sendMsg(connfd, startTransferMsg);
 
