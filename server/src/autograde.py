@@ -36,9 +36,9 @@ def create_test_file(filename):
     f.write(data)
   f.close()
 
-def test(port=6789, directory='/Users/pingguo/Desktop/CN1_ftp/server/src/tmp'):
+def test(port=21, directory='/tmp'):
   global credit
-  if port == 6789 and directory == '/Users/pingguo/Desktop/CN1_ftp/server/src/tmp':
+  if port == 21 and directory == '/tmp':
     server = subprocess.Popen('./server', stdout=subprocess.PIPE)
   else:
     server = subprocess.Popen(['./server', '-port', '%d' % port, '-root', directory], stdout=subprocess.PIPE)
@@ -49,7 +49,6 @@ def test(port=6789, directory='/Users/pingguo/Desktop/CN1_ftp/server/src/tmp'):
     if not ftp.connect('127.0.0.1', port).startswith('220'):
       print 'You missed response 220'
       credit -= minor
-    
     # login
     if not ftp.login().startswith('230'):
       print 'You missed response 230'
@@ -66,12 +65,9 @@ def test(port=6789, directory='/Users/pingguo/Desktop/CN1_ftp/server/src/tmp'):
     filename = 'test%d.data' % random.randint(100, 200)
     create_test_file(directory + '/' + filename)
     ftp.set_pasv(False)
-    
     if not ftp.retrbinary('RETR %s' % filename, open(filename, 'wb').write).startswith('226'):
       print 'Bad response for RETR'
       credit -= minor
-
-    
     if not filecmp.cmp(filename, directory + '/' + filename):
       print 'Something wrong with RETR'
       credit -= major
@@ -96,7 +92,6 @@ def test(port=6789, directory='/Users/pingguo/Desktop/CN1_ftp/server/src/tmp'):
       print 'Bad response for QUIT'
       credit -= minor
     ftp2.quit()
-    
   except Exception as e:
     print 'Exception occurred:', e
     credit = 0
@@ -105,18 +100,15 @@ def test(port=6789, directory='/Users/pingguo/Desktop/CN1_ftp/server/src/tmp'):
 build()
 # Test 1
 test()
-print "finish test 1"
 # Test 2
-
-port = random.randint(20000, 30000)
-directory = '/Users/pingguo/Desktop/CN1_ftp/server/src/tmp2'
+port = random.randint(2000, 3000)
+directory = ''.join(random.choice(string.ascii_letters) for x in xrange(10))
 if os.path.isdir(directory):
   shutil.rmtree(directory)
 os.mkdir(directory)
 test(port, directory)
 shutil.rmtree(directory)
 # Clean
-# subprocess.Popen(['make', 'clean'], stdout=subprocess.PIPE)
-
+subprocess.Popen(['make', 'clean'], stdout=subprocess.PIPE)
 # Result
 print 'Your credit is %d' % credit
