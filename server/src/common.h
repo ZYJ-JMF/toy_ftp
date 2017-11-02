@@ -38,5 +38,5 @@ extern char* cwdFailError;
 
 //服务器的配置
 extern int port; 
-extern char* rootPath;
-extern char* serverIp;
+extern char rootPath[1000];
+extern char serverIp[100];

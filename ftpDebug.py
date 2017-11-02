@@ -187,7 +187,7 @@ class FTP:
 
     # Internal: send one command to the server (through putline())
     def putcmd(self, line):
-        if self.debugging: print('*cmd*', self.sanitize(line))
+        print('*cmd*', self.sanitize(line))
         self.putline(line)
 
     # Internal: return one line from the server, stripping CRLF.

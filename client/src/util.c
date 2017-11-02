@@ -189,6 +189,7 @@ int recvFile(int connfd, char* fileName)
 	while(1)
 	{
 		size = read(connfd, buffer, 8191);
+		printf("recv %d bytes.\n", size);
 		if(size <= 0)
 			break;
 		fwrite(buffer, 1, size, f);
@@ -232,7 +233,7 @@ int bindSocketToServer(int sockfd, int port)
 	struct sockaddr_in addr;
 	memset(&addr, 0, sizeof(addr));
 	addr.sin_family = AF_INET;
-	addr.sin_port = port;
+	addr.sin_port = htons(port);
 	addr.sin_addr.s_addr = htonl(INADDR_ANY);
 	if (bind(sockfd, (struct sockaddr*)&addr, sizeof(addr)) == -1) 
 	{

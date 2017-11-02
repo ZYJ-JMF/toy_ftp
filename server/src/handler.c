@@ -3,15 +3,9 @@
 int handleFirstConnectRequest(int connfd)
 {
 	if(sendMsg(connfd, welcomeMsg) == 1)
-	{
-		printf("Welcome message sent.\n");
 		return 1;
-	}
 	else
-	{
-		printf("Error send welcome.\n");
 		return -1;
-	}
 }
 
 int handleInputSentence(int connfd, char* sentence)
@@ -103,8 +97,8 @@ int handlePortRequest(int connfd, char* param, char* clientIp, int* pClientPort)
 	{
 		getIpFromPortMsg(param, clientIp);
 		getPortFromPortMsg(param, pClientPort);
-		printf("Client IP is %s.\n", clientIp);
-		printf("Client port is %d.\n", *pClientPort);
+		printf("Client IP is %s\n", clientIp);
+		printf("Client port is %d\n", *pClientPort);
 		if(sendMsg(connfd, portMsg) == -1)
 			return -1;
 	}
@@ -132,7 +126,8 @@ int handlePasvRequest(int connfd, char* param, int* psockfd)
 		}
 	}
 	printf("Listening port: %d\n", pasvPort);
-	char pasvMsg[200] = "\0";
+	char pasvMsg[200];
+	memset(pasvMsg, 0, strlen(pasvMsg));
 	makePasvPortMsg(pasvMsg, pasvPort);
 	if(sendMsg(connfd, pasvMsg) == -1)
 		return -1;
@@ -187,7 +182,6 @@ int handleRetrRequest(int connfd, int fileConnfd, char* param, char* pWorkingDir
 	else
 	{
 		sendMsg(connfd, networkError);
-		printf("send failed.\n");
 		return -1;
 	}
 }
@@ -231,7 +225,7 @@ int handleListRequest(int connfd, int fileConnfd, char* param, char* pWorkingDir
 		else
 			sendMsg(fileConnfd, listData);
 	}
-	printf("List data is %s \n." , listData);
+	printf("List data is %s" , listData);
 	sendMsg(connfd, fileSentMsg);
 	return 1;
 }
@@ -298,23 +292,19 @@ int handleMkdRequest(int connfd, char* param, char* pWorkingDir)
 	char filePath[200];
 	memset(filePath, 0, strlen(filePath));
 	makeAbsolutePath(filePath, pWorkingDir, param);
-	printf("File path is %s\n", filePath);
 	DIR* dir = opendir(filePath);
 	if(dir)
 	{
-		printf("directory exists.\n");
 		sendMsg(connfd, mkdFailError);
 		return -1;
 	}
 	else if(mkdir(filePath, 0777) == -1)
 	{
-		printf("Wrong path.\n");
 		sendMsg(connfd, mkdFailError);
 		return -1;
 	}
 	else
 	{
-		printf("succeed in creating directory.\n");
 		char mkdSuccessMsg[100];
 		memset(mkdSuccessMsg, 0, strlen(mkdSuccessMsg));
 		char endOfLine[10] = "\r\n";
@@ -363,7 +353,6 @@ int handleCwdRequest(int connfd, char* param, char* pWorkingDir)
 	DIR* dir = opendir(param);
 	if(!dir)
 	{
-		printf("Change directory failed.\n");
 		sendMsg(connfd, cwdFailError);
 		return -1;
 	}

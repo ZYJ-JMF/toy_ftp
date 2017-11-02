@@ -43,7 +43,6 @@ void removeLineFeed(char* sentence)
 	{
 		sentence[len - 1] = '\0';
 		len--;
-		//printf("Remove line feed at pos %d.\n", len - 1);
 	}
 }
 
@@ -74,7 +73,6 @@ int getIpFromPortMsg(char* param, char* clientIp)
 		}
 		i++;
 	}
-	printf("IP is %s\n", clientIp);
 	return 1;
 }
 
@@ -155,6 +153,7 @@ int getCommandFromSentence(char* sentence, char* command, char* parameter)
 void makePasvPortMsg(char* pasvMsg, int pasvPort)
 {
 	char serverIpWithComma[80];
+	memset(serverIpWithComma, 0, strlen(serverIpWithComma));
 	strcpy(serverIpWithComma, serverIp);
 	strreplace(serverIpWithComma, '.', ',');
 	int p1 = pasvPort / 256;
@@ -164,7 +163,9 @@ void makePasvPortMsg(char* pasvMsg, int pasvPort)
 	char comma[2] = ",";
 	char endOfLine[10] = "\r\n";
 	char p1c[10];
+	memset(p1c, 0, strlen(p1c));
 	char p2c[10];
+	memset(p2c, 0, strlen(p2c));
 	intToString(p1, p1c);
 	intToString(p2, p2c);
 	strcat(pasvMsg, pasvMsgPart);
@@ -176,6 +177,7 @@ void makePasvPortMsg(char* pasvMsg, int pasvPort)
 	strcat(pasvMsg, p2c);
 	strcat(pasvMsg, rightBracket);
 	strcat(pasvMsg, endOfLine);
+	printf("pasvmsg is %s", pasvMsg);
 }
 
 void makeStartTransferMsg(char* startTransferMsg, char* fileName)
@@ -230,7 +232,6 @@ int recvSentence(int connfd, char* sentence)
     return 1;
 }
 
-//向client发送信息
 int sendMsg(int connfd, char* sentence)
 {
 	int len = strlen(sentence);
@@ -243,7 +244,6 @@ int sendMsg(int connfd, char* sentence)
 	return 1;
 }
 
-//网络错误返回-1,未知错误返回-2
 int recvFile(int connfd, char* fileName)
 {
 	FILE* f = fopen(fileName, "wb");
@@ -271,6 +271,7 @@ int sendFile(int connfd, char* fileName)
 	while(1)
 	{
 		size = fread(buffer, 1, 8190, f);
+		printf("send %d bytes.\n", size);
 		if(size <= 0)
 			break;
 		send(connfd, buffer, size, 0);
@@ -489,7 +490,6 @@ int setSocketOption(int sockfd)
 	return 1;
 }
 
-//10是最大可以排队连接的个数，在这里（并发情况下）应该无意义
 int startSocketListening(int sockfd, int maxQueueLength)
 {
 	if (listen(sockfd, maxQueueLength) == -1) 
@@ -526,11 +526,10 @@ int getParamsFromCli(int argc, char**argv)
 		switch(opt)
 		{
 			case VALUE_PORT:
-				printf("port\n");
 				port = atoi(optarg);
 				break;
 			case VALUE_ROOT:
-				printf("root\n");
+				memset(rootPath, 0, strlen(rootPath));
 				strcpy(rootPath, optarg);
 				break;
 			case '?':
@@ -553,7 +552,8 @@ int sendConnectRequest(int sockfd, char* targetIp, int targetPort)
 	memset(&addr, 0, sizeof(addr));
 	addr.sin_family = AF_INET;
 	addr.sin_port = htons(targetPort);
-	//addr.sin_addr.s_addr = targetIp;
+	printf("target IP is %s", targetIp);
+	addr.sin_addr.s_addr = inet_addr(targetIp);
 	if (connect(sockfd, (struct sockaddr*)&addr, sizeof(addr)) < 0)
 	{
 		printf("Error connect(): %s(%d)\n", strerror(errno), errno);
