@@ -1,7 +1,7 @@
 import socket
 import os
 
-server_ip = "localhost"
+server_ip = "192.241.151.16"
 server_port = 9876
 
 size = 8192

@@ -2,8 +2,10 @@ import socket
 
 size = 8192
 
+server_ip = 'localhost'
+server_port = 9876
 sock_listen = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-sock_listen.bind(('localhost', 9876))
+sock_listen.bind((server_ip, server_port))
 
 counter = 0
 
