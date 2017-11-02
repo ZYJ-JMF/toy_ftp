@@ -1,3 +1,4 @@
+#! /usr/bin/python
 import subprocess
 import random
 import time
@@ -35,20 +36,19 @@ def create_test_file(filename):
     f.write(data)
   f.close()
 
-def test(port=6789, directory='/tmp'):
+def test(port=21, directory='/tmp'):
   global credit
-  if port == 6789 and directory == '/tmp':
-      server = subprocess.Popen('./server', stdout=subprocess.PIPE)
+  if port == 21 and directory == '/tmp':
+    server = subprocess.Popen('./server', stdout=subprocess.PIPE)
   else:
-      server = subprocess.Popen(['./server', '-port', '%d' % port, '-root', directory], stdout=subprocess.PIPE)
-  time.sleep(1)
+    server = subprocess.Popen(['./server', '-port', '%d' % port, '-root', directory], stdout=subprocess.PIPE)
+  time.sleep(0.1)
   try:
     ftp = FTP()
     # connect
     if not ftp.connect('127.0.0.1', port).startswith('220'):
       print 'You missed response 220'
       credit -= minor
-    '''
     # login
     if not ftp.login().startswith('230'):
       print 'You missed response 230'
@@ -92,19 +92,15 @@ def test(port=6789, directory='/tmp'):
       print 'Bad response for QUIT'
       credit -= minor
     ftp2.quit()
-    '''
   except Exception as e:
     print 'Exception occurred:', e
     credit = 0
-
   server.kill()
-  
-build()
 
+build()
 # Test 1
 test()
 # Test 2
-
 port = random.randint(2000, 3000)
 directory = ''.join(random.choice(string.ascii_letters) for x in xrange(10))
 if os.path.isdir(directory):
@@ -115,5 +111,4 @@ shutil.rmtree(directory)
 # Clean
 subprocess.Popen(['make', 'clean'], stdout=subprocess.PIPE)
 # Result
-
 print 'Your credit is %d' % credit
