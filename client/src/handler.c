@@ -1,6 +1,6 @@
 #include"handler.h"
 
-int sendConnectRequest(int sockfd, char* serverIp, int serverPort)
+int sendConnectRequest(int sockfd, char* targetIp, int serverPort)
 {
 	struct sockaddr_in addr;
 	char response[1000];
@@ -8,12 +8,11 @@ int sendConnectRequest(int sockfd, char* serverIp, int serverPort)
 	memset(&addr, 0, sizeof(addr));
 	addr.sin_family = AF_INET;
 	addr.sin_port = htons(serverPort);
-	addr.sin_addr.s_addr = inet_addr(serverIp);
-	if(inet_addr(serverIp) == -1)
+	if(inet_pton(AF_INET, targetIp, &addr.sin_addr) <= 0)
 	{
-		printf("Error inet_addr: %s(%d)\n", strerror(errno), errno);
 		return -1;
 	}
+
 	if (connect(sockfd, (struct sockaddr*)&addr, sizeof(addr)) < 0)
 	{
 		printf("Error connect(): %s(%d)\n", strerror(errno), errno);
@@ -160,7 +159,7 @@ int sendPortRequest(int sockfd, char* param)
 }
 int sendPasvRequest(int sockfd)
 {
-	char* pasvCommand = "PASV";
+	char pasvCommand[10] = "PASV";
 	if(write(sockfd, pasvCommand, strlen(pasvCommand)) < 0)
 	{
 		printf("Error write(): %s(%d)\n", strerror(errno), errno);
@@ -218,6 +217,8 @@ int handleConnectResponse(int sockfd)
 int handleUserResponse(int sockfd)
 {
 	char response[1000];
+	memset(response, 0, strlen(response));
+
 	if(read(sockfd, response, 8191) < 0)
 	{
 		printf("Error read(): %s(%d)\n", strerror(errno), errno);
@@ -236,6 +237,8 @@ int handleUserResponse(int sockfd)
 int handlePassResponse(int sockfd)
 {
 	char response[1000];
+	memset(response, 0, strlen(response));
+
 	if(read(sockfd, response, 8191) < 0)
 	{
 		printf("Error read(): %s(%d)\n", strerror(errno), errno);
@@ -254,6 +257,8 @@ int handlePassResponse(int sockfd)
 int handleSystResponse(int sockfd)
 {
 	char response[1000];
+	memset(response, 0, strlen(response));
+
 	if(read(sockfd, response, 8191) < 0)
 	{
 		printf("Error read(): %s(%d)\n", strerror(errno), errno);
@@ -272,6 +277,8 @@ int handleSystResponse(int sockfd)
 int handleTypeResponse(int sockfd)
 {
 	char response[1000];
+	memset(response, 0, strlen(response));
+
 	if(read(sockfd, response, 8191) < 0)
 	{
 		printf("Error read(): %s(%d)\n", strerror(errno), errno);
@@ -302,7 +309,7 @@ int handlePasvResponse(int sockfd,int* pFileSockfd)
 		printf("current reply is : %s\n", response);
 		return -1; 
 	}
-	printf("FROM SERVER: %s\n", response);
+	printf("FROM SERVER: %s", response);
 
 	char serverIp[80];
 	memset(serverIp, 0, strlen(serverIp));
@@ -343,7 +350,7 @@ int handlePortResponse(int sockfd, char* param, int* pListenFd)
 	getPortFromPortMsg(param, pPort);
 	printf("port is %d\n", port);
 	*pListenFd = createSocket();
-	if(bindSocketToServer(*pListenFd, port) < 0)
+	if(bindSocket(*pListenFd, port) < 0)
 	{
 		return -1;
 	}
@@ -516,18 +523,78 @@ int handleNlstResponse(int sockfd, int fileSockfd, char* param)
 }
 int handleMkdResponse(int sockfd)
 {
+	char response[1000];
+	memset(response, 0, strlen(response));
+	
+	if(read(sockfd, response, 8191) < 0)
+	{
+		printf("Error read(): %s(%d)\n", strerror(errno), errno);
+		return -1;
+	} 
+	if(getDigit(response) != 250)
+	{
+		printf("No proper reply.\n");
+		printf("current reply is : %s\n", response);
+		return -1; 
+	}
+	printf("FROM SERVER: %s\n", response);
 	return 1;
 }
 int handleRmdResponse(int sockfd)
 {
+	char response[1000];
+	memset(response, 0, strlen(response));
+	
+	if(read(sockfd, response, 8191) < 0)
+	{
+		printf("Error read(): %s(%d)\n", strerror(errno), errno);
+		return -1;
+	} 
+	if(getDigit(response) != 250)
+	{
+		printf("No proper reply.\n");
+		printf("current reply is : %s\n", response);
+		return -1; 
+	}
+	printf("FROM SERVER: %s\n", response);
 	return 1;
 }
 int handleCwdResponse(int sockfd)
 {
+	char response[1000];
+	memset(response, 0, strlen(response));
+	
+	if(read(sockfd, response, 8191) < 0)
+	{
+		printf("Error read(): %s(%d)\n", strerror(errno), errno);
+		return -1;
+	} 
+	if(getDigit(response) != 250)
+	{
+		printf("No proper reply.\n");
+		printf("current reply is : %s\n", response);
+		return -1; 
+	}
+	printf("FROM SERVER: %s\n", response);
 	return 1;
 }
 int handlePwdResponse(int sockfd)
 {
+	char response[1000];
+	memset(response, 0, strlen(response));
+	
+	if(read(sockfd, response, 8191) < 0)
+	{
+		printf("Error read(): %s(%d)\n", strerror(errno), errno);
+		return -1;
+	} 
+	if(getDigit(response) != 257)
+	{
+		printf("No proper reply.\n");
+		printf("current reply is : %s\n", response);
+		return -1; 
+	}
+	printf("FROM SERVER: %s\n", response);
 	return 1;
 }
 

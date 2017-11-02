@@ -28,7 +28,7 @@ int recvFile(int connfd, char* fileName);
 int sendFile(int connfd, char* fileName);
 
 int createSocket();
-int bindSocketToServer(int sockfd, int port);
+int bindSocket(int sockfd, int port);
 int setSocketOption(int sockfd);
 int startSocketListening(int sockfd, int maxQueueLength);
 int closeSocket(int* pSocket);

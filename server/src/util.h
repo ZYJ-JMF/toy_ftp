@@ -39,6 +39,7 @@ void makeAbsolutePath(char* filePath, char* rootPath, char* fineName);
 int checkPassParam(char* param);
 int checkPortParam(char* param);
 int checkListParam(char* param);
+
 //检查路径中是否包含../
 int checkPath(char* path);
 
