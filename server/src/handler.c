@@ -134,7 +134,6 @@ int handlePasvRequest(int connfd, char* param, int* psockfd)
 	return 1;
 }
 
-//TODO:处理错误情况
 int handleStorRequest(int connfd, int fileConnfd, char* param, char* pWorkingDir)
 {
 	if(checkPath(param) == -1)
@@ -149,6 +148,7 @@ int handleStorRequest(int connfd, int fileConnfd, char* param, char* pWorkingDir
 	char filePath[300];
 	makeAbsolutePath(filePath, pWorkingDir, param);
 	int state = recvFile(fileConnfd, filePath);
+	printf("state is %d\n", state);
 	if(state == 1)
 	{
 		sendMsg(connfd, fileSentMsg);
