@@ -75,6 +75,23 @@ int main(int argc, char **argv)
 		{
 			if(sendListRequest(sockfd, param) == -1)
 				continue;
+			switch(transferMode)
+			{
+				case PASV_MODE:
+					handleListResponse(sockfd, fileSockfd);
+					break;
+				case PORT_MODE:
+					if ((fileSockfd = accept(listenFd, NULL, NULL)) == -1)
+					{
+						printf("Error accept(): %s(%d)\n", strerror(errno), errno);
+						continue;
+					} 
+					handleListResponse(sockfd, fileSockfd);
+					break;
+				default:
+					break;
+			}
+			transferMode = NO_MODE;
 
 		}
 		else if(strcmp(command, "STOR") == 0)

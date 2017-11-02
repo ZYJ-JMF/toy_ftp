@@ -15,7 +15,7 @@ char* loginSuccessMsg = "230 Guest login ok, access restrictions apply.\r\n";
 char* mkdSuccessMsgPart = "250 Successfully make directory ";
 char* rmdSuccessMsgPart = "250 Successfully remove directory ";
 char* cwdSuccessMsgPart = "250 Successfully change working directory to ";
-char* pwdSuccessMsgPart = "257 Current working directory is ";
+char* pwdSuccessMsgPart = "257 ";
 
 char* requirePassMsg = "331 Guest login ok, send your e-mail address as password.\r\n";
 
@@ -38,5 +38,5 @@ char* cwdFailError = "550 Change directory failed.\r\n";
 
 //服务器的配置
 int port = 6789; 
-char* rootPath = "/Users/pingguo/Desktop/CN1_ftp/server/tmp";
+char* rootPath = "/Users/pingguo/Desktop/CN1_ftp/server/src/tmp";
 char* serverIp = "127.0.0.1";

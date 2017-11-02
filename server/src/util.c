@@ -280,6 +280,7 @@ int sendFile(int connfd, char* fileName)
 
 int sendDirectoryInfo(int fileConnfd, char* directoryPath, char* listData)
 {
+	printf("sent directory info.\n");
 	char blank[2] = " ";
 	char endOfLine[10] = "\r\n";
 	char regFilePrefix[100] = "rw-r--r-- 1 owner group       ";
@@ -459,7 +460,6 @@ int createSocket()
 		printf("Error socket(): %s(%d)\n", strerror(errno), errno);
 		exit(1);
 	}
-	printf("socketfd is: %d\n", sockfd);
 	return sockfd;
 }
 //将socket绑定到服务器指定端口
@@ -546,13 +546,13 @@ int getParamsFromCli(int argc, char**argv)
 	return 1;
 }
 
-int sendConnectRequest(int sockfd, char* targetIp, int serverPort)
+int sendConnectRequest(int sockfd, char* targetIp, int targetPort)
 {
 	struct sockaddr_in addr;
 	char response[1000];
 	memset(&addr, 0, sizeof(addr));
 	addr.sin_family = AF_INET;
-	addr.sin_port = htons(serverPort);
+	addr.sin_port = htons(targetPort);
 	//addr.sin_addr.s_addr = targetIp;
 	if (connect(sockfd, (struct sockaddr*)&addr, sizeof(addr)) < 0)
 	{

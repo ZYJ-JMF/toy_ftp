@@ -400,6 +400,7 @@ int handleRetrResponse(int sockfd, int fileSockfd, char* fileName)
 int handleListResponse(int sockfd, int fileSockfd)
 {
 	char response[1000];
+	memset(response, 0, strlen(response));
 	if(read(sockfd, response, 8191) < 0)
 	{
 		printf("Error read(): %s(%d)\n", strerror(errno), errno);
@@ -411,16 +412,17 @@ int handleListResponse(int sockfd, int fileSockfd)
 		printf("current reply is : %s\n", response);
 		return -1; 
 	}
-	printf("Successfully read from server. Reply is %s.\n", response);
-
+	printf("FROM SERVER: %s\n", response);
 	char listContent[8192];
+	memset(listContent, 0, strlen(listContent));
 	if(read(fileSockfd, listContent, 8191) < 0)
 	{
 		printf("Error read(): %s(%d)\n", strerror(errno), errno);
 		return -1;
 	}
-	printf("List content is %s\n", listContent);
+	printf("%s\n", listContent);
 
+	memset(response, 0, strlen(response));
 	if(read(sockfd, response, 8191) < 0)
 	{
 		printf("Error read(): %s(%d)\n", strerror(errno), errno);

@@ -196,20 +196,18 @@ int handleListRequest(int connfd, int fileConnfd, char* param, char* pWorkingDir
 {
 	char listTargetPath[100];
 	memset(listTargetPath, 0, strlen(listTargetPath));
-	if(param[0] == '\0')
+	if(param[0] == '\0' || strcmp(param, "-a") == 0)
 		strcpy(listTargetPath, pWorkingDir);
 	else
 		makeAbsolutePath(listTargetPath, pWorkingDir, param);
 	if(checkListParam(listTargetPath) == 0)
-	{
 		return -1;
-	}
 	char listData[8192];
 	memset(listData, 0, strlen(listData));
 	char startTransferMsg[400];
 	makeStartTransferMsg(startTransferMsg, listTargetPath);
 	sendMsg(connfd, startTransferMsg);
-
+	
 	DIR* dir;
 	dir = opendir(listTargetPath);
 	//根据是文件还是目录传送不同数据
@@ -233,6 +231,7 @@ int handleListRequest(int connfd, int fileConnfd, char* param, char* pWorkingDir
 		else
 			sendMsg(fileConnfd, listData);
 	}
+	printf("List data is %s \n." , listData);
 	sendMsg(connfd, fileSentMsg);
 	return 1;
 }
@@ -387,10 +386,15 @@ int handleCwdRequest(int connfd, char* param, char* pWorkingDir)
 int handlePwdRequest(int connfd, char* param, char* pWorkingDir)
 {
 	char pwdSuccessMsg[100];
+	char quotation[4] = "\"";
 	memset(pwdSuccessMsg, 0, strlen(pwdSuccessMsg));
 	char endOfLine[10] = "\r\n";
+	char blank[2] = " ";
 	strcat(pwdSuccessMsg, pwdSuccessMsgPart);
+	strcat(pwdSuccessMsg, quotation);
 	strcat(pwdSuccessMsg, pWorkingDir);
+	strcat(pwdSuccessMsg, quotation);
+	strcat(pwdSuccessMsg, blank);
 	strcat(pwdSuccessMsg, endOfLine);
 	sendMsg(connfd, pwdSuccessMsg);
 	return 1;
