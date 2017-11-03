@@ -2,10 +2,16 @@
 
 int getServerInfo()
 {
+	memset(serverIp, 0, 100);
 	printf("Server ip(default:127.0.0.1):");
 	fgets(serverIp, 4096, stdin);
+
 	if(serverIp[0] == '\n'|| serverIp[0] == '\r')
+	{
 		strcpy(serverIp,"127.0.0.1");
+	}
+	else
+		removeLineFeed(serverIp);
 	printf("server ip is %s\n", serverIp);
 	printf("Server port(default:6789):");
 	fgets(serverPortStr, 4096, stdin);
@@ -100,9 +106,15 @@ int main(int argc, char **argv)
 	int transferMode = NO_MODE;
 	sockfd = createSocket();
 	if(sendConnectRequest(sockfd, serverIp, serverPort) == -1)
+	{
+		printf("Cann't send connect request to given server.\n");
 		return 1;
+	}
 	if(handleConnectResponse(sockfd) == -1)
+	{
+		printf("No proper reply from server.\n");
 		return 1;
+	}
 	printf("You have successfully connected to that server.\n");
 	if(getUserInfo() == -1) return 1;
 	if(sendUserRequest(sockfd, user) == -1) return 1;

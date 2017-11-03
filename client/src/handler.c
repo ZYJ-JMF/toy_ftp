@@ -10,6 +10,7 @@ int sendConnectRequest(int sockfd, char* targetIp, int serverPort)
 	addr.sin_port = htons(serverPort);
 	if(inet_pton(AF_INET, targetIp, &addr.sin_addr) <= 0)
 	{
+		printf("Error inet_pton(): %s(%d)\n", strerror(errno), errno);
 		return -1;
 	}
 
@@ -53,7 +54,7 @@ int sendPassRequest(int sockfd, char*password)
 
 int sendSystRequest(int sockfd)
 {
-	char* systCommand = "SYST";
+	char systCommand[50] = "SYST\r\n";
 	if(write(sockfd, systCommand, strlen(systCommand)) < 0)
 	{
 		printf("Error write(): %s(%d)\n", strerror(errno), errno);
@@ -64,7 +65,7 @@ int sendSystRequest(int sockfd)
 
 int sendTypeRequest(int sockfd)
 {
-	char* typeCommand = "TYPE I";
+	char typeCommand[100] = "TYPE I\r\n";
 	if(write(sockfd, typeCommand, strlen(typeCommand)) < 0)
 	{
 		printf("Error write(): %s(%d)\n", strerror(errno), errno);
@@ -75,8 +76,10 @@ int sendTypeRequest(int sockfd)
 
 int sendMkdRequest(int sockfd, char* param)
 {
+	char endOfLine[4] = "\r\n";
 	char mkdPrefix[100] = "MKD ";
 	strcat(mkdPrefix, param);
+	strcat(mkdPrefix, endOfLine);
 	if(write(sockfd, mkdPrefix, strlen(mkdPrefix)) < 0)
 	{
 		printf("Error write(): %s(%d)\n", strerror(errno), errno);
@@ -86,8 +89,10 @@ int sendMkdRequest(int sockfd, char* param)
 }
 int sendRmdRequest(int sockfd, char* param)
 {
+	char endOfLine[4] = "\r\n";
 	char rmdPrefix[100] = "RMD ";
 	strcat(rmdPrefix, param);
+	strcat(rmdPrefix, endOfLine);
 	if(write(sockfd, rmdPrefix, strlen(rmdPrefix)) < 0)
 	{
 		printf("Error write(): %s(%d)\n", strerror(errno), errno);
@@ -97,8 +102,10 @@ int sendRmdRequest(int sockfd, char* param)
 }
 int sendCwdRequest(int sockfd, char* param)
 {
+	char endOfLine[4] = "\r\n";
 	char cwdPrefix[100] = "CWD ";
 	strcat(cwdPrefix, param);
+	strcat(cwdPrefix, endOfLine);
 	if(write(sockfd, cwdPrefix, strlen(cwdPrefix)) < 0)
 	{
 		printf("Error write(): %s(%d)\n", strerror(errno), errno);
@@ -109,8 +116,10 @@ int sendCwdRequest(int sockfd, char* param)
 
 int sendPwdRequest(int sockfd, char* param)
 {
-	char cwdPrefix[100] = "PWD";
-	if(write(sockfd, cwdPrefix, strlen(cwdPrefix)) < 0)
+	char endOfLine[4] = "\r\n";
+	char pwdCommand[100] = "PWD";
+	strcat(pwdCommand, endOfLine);
+	if(write(sockfd, pwdCommand, strlen(pwdCommand)) < 0)
 	{
 		printf("Error write(): %s(%d)\n", strerror(errno), errno);
 		return -1;
@@ -119,11 +128,13 @@ int sendPwdRequest(int sockfd, char* param)
 }
 int sendListRequest(int sockfd, char* param)
 {
+	char endOfLine[4] = "\r\n";
 	char listCommand[200] = "LIST ";
 	if(!param)
 		listCommand[4] = '\0';
 	else
 		strcat(listCommand, param);
+	strcat(listCommand, endOfLine);
 	if(write(sockfd, listCommand, strlen(listCommand)) < 0)
 	{
 		printf("Error write(): %s(%d)\n", strerror(errno), errno);
@@ -133,23 +144,27 @@ int sendListRequest(int sockfd, char* param)
 }
 int sendNlstRequest(int sockfd, char* param)
 {
-	char listCommand[200] = "NLST ";
+	char endOfLine[4] = "\r\n";
+	char nlstCommand[200] = "NLST ";
 	if(!param)
-		listCommand[4] = '\0';
+		nlstCommand[4] = '\0';
 	else
-		strcat(listCommand, param);
-	if(write(sockfd, listCommand, strlen(listCommand)) < 0)
+		strcat(nlstCommand, param);
+	strcat(nlstCommand, endOfLine);
+	if(write(sockfd, nlstCommand, strlen(nlstCommand)) < 0)
 	{
 		printf("Error write(): %s(%d)\n", strerror(errno), errno);
 		return -1;
 	} 		
 	return 1;
 }
+
 int sendPortRequest(int sockfd, char* param)
 {
+	char endOfLine[4] = "\r\n";
 	char portCommand[200] = "PORT ";
 	strcat(portCommand, param);
-
+	strcat(portCommand, endOfLine);
 	if(write(sockfd, portCommand, strlen(portCommand)) < 0)
 	{
 		printf("Error write(): %s(%d)\n", strerror(errno), errno);
@@ -157,9 +172,10 @@ int sendPortRequest(int sockfd, char* param)
 	} 		
 	return 1;
 }
+
 int sendPasvRequest(int sockfd)
 {
-	char pasvCommand[10] = "PASV";
+	char pasvCommand[10] = "PASV\r\n";
 	if(write(sockfd, pasvCommand, strlen(pasvCommand)) < 0)
 	{
 		printf("Error write(): %s(%d)\n", strerror(errno), errno);
@@ -170,8 +186,10 @@ int sendPasvRequest(int sockfd)
 }
 int sendRetrRequest(int sockfd, char* param)
 {
+	char endOfLine[4] = "\r\n";
 	char retrPrefix[100] = "RETR ";
 	strcat(retrPrefix, param);
+	strcat(retrPrefix, endOfLine);
 	if(write(sockfd, retrPrefix, strlen(retrPrefix)) < 0)
 	{
 		printf("Error write(): %s(%d)\n", strerror(errno), errno);
@@ -182,7 +200,9 @@ int sendRetrRequest(int sockfd, char* param)
 
 int sendStorRequest(int sockfd, char* param)
 {
+	char endOfLine[4] = "\r\n";
 	char storPrefix[100] = "STOR ";
+	strcat(storPrefix, param);
 	strcat(storPrefix, param);
 	if(write(sockfd, storPrefix, strlen(storPrefix)) < 0)
 	{
@@ -230,7 +250,7 @@ int handleUserResponse(int sockfd)
 		printf("current reply is : %s\n", response);
 		return -1; 
 	}
-	printf("Successfully set user.\n");
+	printf("FROM SERVER: %s\n", response);
 	return 1;
 }
 
@@ -250,7 +270,8 @@ int handlePassResponse(int sockfd)
 		printf("current reply is : %s\n", response);
 		return -1;
 	}
-	printf("Successfully set pass.\n");
+	printf("FROM SERVER: %s\n", response);
+
 	return 1;
 }
 
@@ -258,7 +279,6 @@ int handleSystResponse(int sockfd)
 {
 	char response[1000];
 	memset(response, 0, 1000);
-
 	if(read(sockfd, response, 8191) < 0)
 	{
 		printf("Error read(): %s(%d)\n", strerror(errno), errno);
