@@ -34,16 +34,16 @@ int getUserInfo()
 int handleBrowseRequest(int sockfd, int* pFileSockfd ,char* param)
 {
 	if(sendPasvRequest(sockfd) == -1) return -1;
-	if(handlePasvResponse(sockfd, pFileSockfd) == -1) return -1;
+	if(handlePasvResponseSimple(sockfd, pFileSockfd) == -1) return -1;
 	if(sendNlstRequest(sockfd, param) == -1) return -1;
-	if(handleNlstResponse(sockfd, *pFileSockfd, param) == -1) return -1;
+	if(handleNlstResponseSimple(sockfd, *pFileSockfd, param) == -1) return -1;
 	closeSocket(pFileSockfd);
 	return 1;
 }
 int handleDownloadRequest(int sockfd, int* pFileSockfd, char* param)
 {
 	if(sendPasvRequest(sockfd) == -1) return -1;
-	if(handlePasvResponse(sockfd, pFileSockfd) == -1) return -1;
+	if(handlePasvResponseSimple(sockfd, pFileSockfd) == -1) return -1;
 	if(sendRetrRequest(sockfd, param) == -1) return -1;
 	if(handleRetrResponse(sockfd, *pFileSockfd, param) == -1) return -1;
 	closeSocket(pFileSockfd);
@@ -52,7 +52,7 @@ int handleDownloadRequest(int sockfd, int* pFileSockfd, char* param)
 int handleUploadRequest(int sockfd, int* pFileSockfd, char* param)
 {
 	if(sendPasvRequest(sockfd) == -1) return -1;
-	if(handlePasvResponse(sockfd, pFileSockfd) == -1) return -1;
+	if(handlePasvResponseSimple(sockfd, pFileSockfd) == -1) return -1;
 	if(sendStorRequest(sockfd, param) == -1) return -1;
 	if(handleStorResponse(sockfd, *pFileSockfd, param) == -1) return -1;
 	closeSocket(pFileSockfd);
@@ -96,7 +96,7 @@ int main(int argc, char **argv)
 	memset(sentence, 0, strlen(sentence));
 	memset(command, 0, strlen(command));
 	memset(param, 0, strlen(param));
-	
+
 	int transferMode = NO_MODE;
 	sockfd = createSocket();
 	if(sendConnectRequest(sockfd, serverIp, serverPort) == -1)
@@ -204,6 +204,7 @@ int main(int argc, char **argv)
 					handleListResponse(sockfd, fileSockfd, param);
 					break;
 				default:
+					handleListResponse(sockfd, fileSockfd, param);
 					break;
 			}
 			transferMode = NO_MODE;
@@ -226,6 +227,7 @@ int main(int argc, char **argv)
 					handleNlstResponse(sockfd, fileSockfd, param);
 					break;
 				default:
+					handleNlstResponse(sockfd, fileSockfd, param);
 					break;
 			}
 			transferMode = NO_MODE;
@@ -248,6 +250,7 @@ int main(int argc, char **argv)
 					handleStorResponse(sockfd, fileSockfd, param);
 					break;
 				default:
+					handleStorResponse(sockfd, fileSockfd, param);
 					break;
 			}
 			transferMode = NO_MODE;
@@ -271,6 +274,7 @@ int main(int argc, char **argv)
 					handleRetrResponse(sockfd, fileSockfd, param);
 					break;
 				default:
+					handleRetrResponse(sockfd, fileSockfd, param);
 					break;
 			}
 			transferMode = NO_MODE;

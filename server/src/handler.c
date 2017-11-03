@@ -125,9 +125,8 @@ int handlePasvRequest(int connfd, char* param, int* psockfd)
 			return -1;
 		}
 	}
-	printf("Listening port: %d\n", pasvPort);
 	char pasvMsg[200];
-	memset(pasvMsg, 0, strlen(pasvMsg));
+	memset(pasvMsg, 0, 200);
 	makePasvPortMsg(pasvMsg, pasvPort);
 	if(sendMsg(connfd, pasvMsg) == -1)
 		return -1;
@@ -150,11 +149,9 @@ int handleStorRequest(int connfd, int fileConnfd, char* param, char* pWorkingDir
 	memset(filePath, 0, strlen(filePath));
 	makeAbsolutePath(filePath, pWorkingDir, param);
 	int state = recvFile(fileConnfd, filePath);
-	printf("state is %d\n", state);
 	if(state == 1)
 	{
 		sendMsg(connfd, fileSentMsg);
-		printf("successfully received.\n");
 		return 1;
 	}
 	else
@@ -176,13 +173,10 @@ int handleRetrRequest(int connfd, int fileConnfd, char* param, char* pWorkingDir
 	char filePath[300];
 	memset(filePath, 0, strlen(filePath));
 	makeAbsolutePath(filePath, pWorkingDir, param);
-	printf("working dir is %s\n", pWorkingDir);
-	printf("filePath is %s\n", filePath);
 	int state = sendFile(fileConnfd, filePath);
 	if(state == 1)
 	{
 		sendMsg(connfd, fileSentMsg);
-		printf("successfully sent.\n");
 		return 1;
 	}
 	else
@@ -203,7 +197,7 @@ int handleListRequest(int connfd, int fileConnfd, char* param, char* pWorkingDir
 	if(checkListParam(listTargetPath) == 0)
 		return -1;
 	char listData[8192];
-	memset(listData, 0, strlen(listData));
+	memset(listData, 0, 8192);
 	char startTransferMsg[400];
 	memset(startTransferMsg, 0, strlen(startTransferMsg));
 	makeStartTransferMsg(startTransferMsg, listTargetPath);
@@ -334,17 +328,14 @@ int handleRmdRequest(int connfd, char* param, char* pWorkingDir)
 	char filePath[200];
 	memset(filePath, 0, strlen(filePath));
 	makeAbsolutePath(filePath, pWorkingDir, param);
-	printf("File path is %s\n", filePath);
 	int status = rmdir(filePath);
 	if(status == -1)
 	{
-		printf("Removal failed.\n");
 		sendMsg(connfd, rmdFailError);
 		return -1;
 	}
 	else if(status == 0)
 	{
-		printf("Removal succeed.\n");
 		char rmdSuccessMsg[100];
 		memset(rmdSuccessMsg, 0, strlen(rmdSuccessMsg));
 		char endOfLine[10] = "\r\n";
@@ -358,7 +349,13 @@ int handleRmdRequest(int connfd, char* param, char* pWorkingDir)
 
 int handleCwdRequest(int connfd, char* param, char* pWorkingDir)
 {
-	DIR* dir = opendir(param);
+	char filePath[200];
+	memset(filePath, 0, 200);
+	if(param[0] != '/')
+		makeAbsolutePath(filePath, pWorkingDir, param);
+	else
+		strcpy(filePath, param);
+	DIR* dir = opendir(filePath);
 	if(!dir)
 	{
 		sendMsg(connfd, cwdFailError);
@@ -370,10 +367,9 @@ int handleCwdRequest(int connfd, char* param, char* pWorkingDir)
 		char endOfLine[10] = "\r\n";
 		memset(cwdSuccessMsg, 0, strlen(cwdSuccessMsg));
 		memset(pWorkingDir, 0, strlen(pWorkingDir));
-		strcpy(pWorkingDir, param);
-		printf("now working dir is %s\n", pWorkingDir);
+		strcpy(pWorkingDir, filePath);
 		strcat(cwdSuccessMsg, cwdSuccessMsgPart);
-		strcat(cwdSuccessMsg, param);
+		strcat(cwdSuccessMsg, filePath);
 		strcat(cwdSuccessMsg, endOfLine);
 		sendMsg(connfd, cwdSuccessMsg);
 	}
@@ -384,7 +380,7 @@ int handlePwdRequest(int connfd, char* param, char* pWorkingDir)
 {
 	char pwdSuccessMsg[100];
 	char quotation[4] = "\"";
-	memset(pwdSuccessMsg, 0, strlen(pwdSuccessMsg));
+	memset(pwdSuccessMsg, 0, 100);
 	char endOfLine[10] = "\r\n";
 	char blank[2] = " ";
 	strcat(pwdSuccessMsg, pwdSuccessMsgPart);
