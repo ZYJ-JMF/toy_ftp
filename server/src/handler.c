@@ -140,14 +140,17 @@ int handleStorRequest(int connfd, int fileConnfd, char* param, char* pWorkingDir
 		sendMsg(connfd, invalidPathError);
 		return -1;
 	}
+	char fileName[100];
+	memset(fileName, 0, 100);
+	getFileNameFromPath(fileName, param);
 	char startTransferPasv[400];
-	memset(startTransferPasv, 0, strlen(startTransferPasv));
+	memset(startTransferPasv, 0, 400);
 	makeStartTransferMsg(startTransferPasv, param);
 	if(sendMsg(connfd, startTransferPasv) == -1)
 		return -1;
 	char filePath[300];
-	memset(filePath, 0, strlen(filePath));
-	makeAbsolutePath(filePath, pWorkingDir, param);
+	memset(filePath, 0, 300);
+	makeAbsolutePath(filePath, pWorkingDir, fileName);
 	int state = recvFile(fileConnfd, filePath);
 	if(state == 1)
 	{

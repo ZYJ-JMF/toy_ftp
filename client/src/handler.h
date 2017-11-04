@@ -18,6 +18,7 @@ int sendMkdRequest(int sockfd, char* param);
 int sendRmdRequest(int sockfd, char* param);
 int sendCwdRequest(int sockfd, char* param);
 int sendPwdRequest(int sockfd, char* param);
+int sendQuitRequest(int sockfd);
 
 /* --------------------------------------------*/
 

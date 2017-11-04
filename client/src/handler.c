@@ -202,9 +202,23 @@ int sendStorRequest(int sockfd, char* param)
 {
 	char endOfLine[4] = "\r\n";
 	char storPrefix[100] = "STOR ";
-	strcat(storPrefix, param);
-	strcat(storPrefix, param);
+	char fileName[200];
+	memset(fileName, 0, 200);
+	getFileNameFromPath(fileName, param);
+	strcat(storPrefix, fileName);
+	strcat(storPrefix, endOfLine);
 	if(write(sockfd, storPrefix, strlen(storPrefix)) < 0)
+	{
+		printf("Error write(): %s(%d)\n", strerror(errno), errno);
+		return -1;
+	} 	
+	return 1;
+}
+
+int sendQuitRequest(int sockfd)
+{
+	char quitCommand[10] = "QUIT\r\n";
+	if(write(sockfd, quitCommand, strlen(quitCommand)) < 0)
 	{
 		printf("Error write(): %s(%d)\n", strerror(errno), errno);
 		return -1;

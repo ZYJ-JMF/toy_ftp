@@ -70,7 +70,6 @@ void showWelcomeMsg()
 	printf("Login OK. Welcome to the magic world of FTP.\n");
 	printf("If you are an FTP-expert, you can use commands in RFC 959.\n");
 	printf("And we will send the raw reply from the server to you.\n");
-	printf("You will be able to handle it c'z you are an expert, right?\n");
 	printf("If you are a green-hand, please enter 'help' to see what you can do.\n");
 }
 
@@ -321,6 +320,8 @@ int main(int argc, char **argv)
 		}
 		else if(strcmp(command, "QUIT") == 0)
 		{
+			if(sendQuitRequest(sockfd) == -1)
+				continue;
 			printf("Bye.\n");
 			sleep(1);
 			break;

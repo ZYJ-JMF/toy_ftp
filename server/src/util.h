@@ -30,6 +30,7 @@ void removeLineFeed(char* sentence);
 int getIpFromPortMsg(char* param, char* clientIp);
 int getPortFromPortMsg(char* param, int* pClientPort);
 int getCommandFromSentence(char* sentence, char* command, char* parameter);
+void getFileNameFromPath(char* fileName ,char* filePath);
 
 void makeStartTransferMsg(char*startTransferMsg, char*fileName);
 void makePasvPortMsg(char* pasvMsg, int pasvPort);

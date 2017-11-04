@@ -23,6 +23,7 @@ int getCommandFromSentence(char* sentence, char* command, char* parameter);
 void getIPFromPasvResponse(char* response, char* serverIp);
 int getPortFromPasvResponse(char* response);
 int getPortFromPortMsg(char* param, int* pClientPort);
+void getFileNameFromPath(char* fileName ,char* filePath);
 
 int recvFile(int connfd, char* fileName);
 int sendFile(int connfd, char* fileName);

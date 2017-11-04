@@ -180,6 +180,41 @@ int getPortFromPortMsg(char* param, int* pClientPort)
 	return 1;
 }
 
+void getFileNameFromPath(char* fileName ,char* filePath)
+{
+	if(filePath[0] != '/')
+	{
+		strcpy(fileName, filePath);
+		return;
+	}
+	else
+	{
+		char temp[100];
+		memset(temp, 0, 100);
+		int i = 0;
+		int recorder = 0;
+		while(1)
+		{
+			if(filePath[i] == '/')
+			{
+				recorder = i;
+				memset(temp, 0, 100);
+			}
+			else if(filePath[i] == '\0')
+			{
+				temp[i - recorder - 1] = '\0';
+				break;
+			}
+			else
+			{
+				temp[i - recorder - 1] = filePath[i];
+			}
+			i++;
+		}
+		strcpy(fileName, temp);
+	}
+}
+
 int recvFile(int connfd, char* fileName)
 {
 	FILE* f = fopen(fileName, "wb");
@@ -188,7 +223,8 @@ int recvFile(int connfd, char* fileName)
 
 	while(1)
 	{
-		size = read(connfd, buffer, 8191);
+		memset(buffer, 0, 8192);
+		size = read(connfd, buffer, 8192);
 		if(size <= 0)
 			break;
 		fwrite(buffer, 1, size, f);
@@ -199,17 +235,23 @@ int recvFile(int connfd, char* fileName)
 }
 
 int sendFile(int connfd, char* fileName)
-{
+{ 
 	FILE* f = fopen(fileName, "rb");
+	if(f == NULL)
+	{
+		return -1;
+	}
 	char buffer[8192];
 	int size;
-
+	printf("prepare to send.\n");
 	while(1)
 	{
+		memset(buffer, 0, 8192);
 		size = fread(buffer, 1, 8190, f);
 		if(size <= 0)
 			break;
 		send(connfd, buffer, size, 0);
+		printf("send %d bytes.\n", size);
 	}
 	return 1;
 }
