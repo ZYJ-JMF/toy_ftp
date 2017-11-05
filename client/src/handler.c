@@ -635,7 +635,7 @@ int handleMkdResponse(int sockfd)
 		printf("Error read(): %s(%d)\n", strerror(errno), errno);
 		return -1;
 	} 
-	if(getDigit(response) != 250)
+	if(getDigit(response) != 257)
 	{
 		printf("No proper reply.\n");
 		printf("current reply is : %s\n", response);
