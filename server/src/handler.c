@@ -301,8 +301,11 @@ int handleMkdRequest(int connfd, char* param, char* pWorkingDir)
 		return -1;
 	}
 	char filePath[200];
-	memset(filePath, 0, strlen(filePath));
-	makeAbsolutePath(filePath, pWorkingDir, param);
+	memset(filePath, 0, 200);
+	if(param[0] != '/')
+		makeAbsolutePath(filePath, pWorkingDir, param);
+	else
+		strcpy(filePath, param);
 	DIR* dir = opendir(filePath);
 	if(dir)
 	{
