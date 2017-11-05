@@ -318,7 +318,7 @@ int main(int argc, char **argv)
 			if(handlePwdResponse(sockfd) == -1)
 				continue;
 		}
-		else if(strcmp(command, "QUIT") == 0 || strcmp(command, "ABOR"))
+		else if(strcmp(command, "QUIT") == 0 || strcmp(command, "ABOR") == 0)
 		{
 			if(sendQuitRequest(sockfd) == -1)
 				continue;
