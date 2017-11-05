@@ -97,8 +97,6 @@ int handlePortRequest(int connfd, char* param, char* clientIp, int* pClientPort)
 	{
 		getIpFromPortMsg(param, clientIp);
 		getPortFromPortMsg(param, pClientPort);
-		printf("Client IP is %s\n", clientIp);
-		printf("Client port is %d\n", *pClientPort);
 		if(sendMsg(connfd, portMsg) == -1)
 			return -1;
 	}
@@ -158,7 +156,10 @@ int handleStorRequest(int connfd, int fileConnfd, char* param, char* pWorkingDir
 		return 1;
 	}
 	else
+	{
+		sendMsg(connfd, networkError);
 		return -1;
+	}
 }
 
 int handleRetrRequest(int connfd, int fileConnfd, char* param, char* pWorkingDir)
@@ -182,11 +183,17 @@ int handleRetrRequest(int connfd, int fileConnfd, char* param, char* pWorkingDir
 		sendMsg(connfd, fileSentMsg);
 		return 1;
 	}
-	else
+	else if(state == -1)
+	{
+		sendMsg(connfd, retrError);
+		return -1;
+	}
+	else if(state == -2)
 	{
 		sendMsg(connfd, networkError);
 		return -1;
 	}
+	return -1;
 }
 
 int handleListRequest(int connfd, int fileConnfd, char* param, char* pWorkingDir)
@@ -229,7 +236,6 @@ int handleListRequest(int connfd, int fileConnfd, char* param, char* pWorkingDir
 		else
 			sendMsg(fileConnfd, listData);
 	}
-	printf("List data is %s" , listData);
 	sendMsg(connfd, fileSentMsg);
 	return 1;
 }

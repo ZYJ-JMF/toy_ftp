@@ -410,7 +410,6 @@ int handlePortResponse(int sockfd, char* param, int* pListenFd)
 	int* pPort = &port;
 
 	getPortFromPortMsg(param, pPort);
-	printf("port is %d\n", port);
 	*pListenFd = createSocket();
 	if(bindSocket(*pListenFd, port) < 0)
 	{
@@ -444,6 +443,7 @@ int handleStorResponse(int sockfd, int fileSockfd, char* param)
 		return -1;
 	}
 	close(fileSockfd);
+	memset(response, 0, 1000);
 	if(read(sockfd, response, 8191) < 0)
 	{
 		printf("Error read(): %s(%d)\n", strerror(errno), errno);
@@ -485,6 +485,7 @@ int handleRetrResponse(int sockfd, int fileSockfd, char* param)
 		return -1;
 	}
 	close(fileSockfd);
+	memset(response, 0, 1000);
 	if(read(sockfd, response, 8191) < 0)
 	{
 		printf("Error read(): %s(%d)\n", strerror(errno), errno);

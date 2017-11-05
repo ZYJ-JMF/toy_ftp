@@ -23,6 +23,7 @@ extern char* cannotConnectError;
 extern char* noPortError;
 extern char* networkError;
 extern char* readDirError;
+extern char* retrError;
 
 extern char* syntaxError;
 extern char* typeError;

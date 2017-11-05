@@ -23,6 +23,7 @@ char* cannotConnectError = "425 Can't connect to given port.\r\n";
 char* noPortError = "425 You need to use PORT or PASV command to establish TCP connection before every file transfer.\r\n";
 char* networkError = "426 Your connection has been broken by network failure.\r\n";
 char* readDirError = "451 Can not read the directory from disk.\r\n";
+char* retrError = "451 Retrieve failed.\r\n";
 
 char* syntaxError = "500 Unacceptable syntax.\r\n";
 char* typeError = "501 Wrong parameters.\r\n";

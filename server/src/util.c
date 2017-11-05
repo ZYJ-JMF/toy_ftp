@@ -212,7 +212,6 @@ void makePasvPortMsg(char* pasvMsg, int pasvPort)
 	strcat(pasvMsg, p2c);
 	strcat(pasvMsg, rightBracket);
 	strcat(pasvMsg, endOfLine);
-	printf("pasvmsg is %s", pasvMsg);
 }
 
 void makeStartTransferMsg(char* startTransferMsg, char* fileName)
@@ -297,10 +296,14 @@ int recvFile(int connfd, char* fileName)
 	fclose(f);
 	return 1;
 }
-
+//-1代表文件错误，-2代表网络错误
 int sendFile(int connfd, char* fileName)
 {
 	FILE * f = fopen(fileName, "rb");
+	if(f == NULL)
+	{
+		return -1;
+	}
 	char buffer[8192];
 	memset(buffer, 0, strlen(buffer));
 
@@ -313,7 +316,13 @@ int sendFile(int connfd, char* fileName)
 			break;
 		send(connfd, buffer, size, 0);
 	}
-	return 1;
+	if(feof(f))
+	{
+		fclose(f);
+		return 1;
+	}
+	else
+		return -2;
 }
 
 int sendDirectoryInfo(int fileConnfd, char* directoryPath, char* listData)

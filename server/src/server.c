@@ -8,13 +8,12 @@ void serveOneClient(int connfd)
 	char sentence[8192];
 	char command[100];
 	char param[100];
-	memset(sentence, 0, strlen(sentence));
-	memset(command, 0, strlen(command));
-	memset(param, 0, strlen(param));
+	memset(sentence, 0, 8192);
+	memset(command, 0, 100);
+	memset(param, 0, 100);
 
 	int hasLogedIn = -1; //是否登录，登录为1，未登录为-1
 	int hasInputPass = -1; //是否给出密码
-	int isTransferring = -1; //是否正在传输文件
 	int fileMode = NO_MODE;
 
 	//pasv模式使用
@@ -39,11 +38,6 @@ void serveOneClient(int connfd)
 			continue;
 		if(parseInputSentence(sentence, command, param) == -1)
 			continue;
-        if(isTransferring == 1)
-        {
-        	printf("Is transferring file.\n");
-        	continue;
-        }
         if(hasLogedIn == -1)
         {
         	if(strcmp(command, "USER") == 0)
@@ -113,11 +107,9 @@ void serveOneClient(int connfd)
 				{
 					if(fileMode == PORT_MODE)
 						connectToClient(connfd, pFileConnfd, clientIp, clientPort);
-					isTransferring = 1;
 					handleRetrRequest(connfd, fileConnfd, param, pWorkingDir);
 					closeSocket(pFileConnfd);
 					closeSocket(pPasvListenfd);
-					isTransferring = -1;
 					fileMode = NO_MODE;
 				}
 			}
@@ -129,11 +121,9 @@ void serveOneClient(int connfd)
 				{
 					if(fileMode == PORT_MODE)
 						connectToClient(connfd, pFileConnfd, clientIp, clientPort);
-					isTransferring = 1;
 					handleStorRequest(connfd, fileConnfd, param, pWorkingDir);
 					closeSocket(pFileConnfd);
 					closeSocket(pPasvListenfd);
-					isTransferring = -1;
 					fileMode = NO_MODE;
 				}
 			}
@@ -146,11 +136,9 @@ void serveOneClient(int connfd)
 				{
 					if(fileMode == PORT_MODE)
 						connectToClient(connfd, pFileConnfd, clientIp, clientPort);
-					isTransferring = 1;
 					handleListRequest(connfd, fileConnfd, param, pWorkingDir);
 					closeSocket(pFileConnfd);
 					closeSocket(pPasvListenfd);
-					isTransferring = -1;
 					fileMode = NO_MODE;
 				}
 			}
@@ -162,11 +150,9 @@ void serveOneClient(int connfd)
 				{
 					if(fileMode == PORT_MODE)
 						connectToClient(connfd, pFileConnfd, clientIp, clientPort);
-					isTransferring = 1;
 					handleNlstRequest(connfd, fileConnfd, param, pWorkingDir);
 					closeSocket(pFileConnfd);
 					closeSocket(pPasvListenfd);
-					isTransferring = -1;
 					fileMode = NO_MODE;
 				}
 			}
