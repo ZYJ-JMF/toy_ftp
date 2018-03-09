@@ -1,5 +1,4 @@
 ## UDP
-软件52班 张迁瑞 2015013226
 ### UDP client&UDP server
 Modified UDP Server and UDP Client in python3 **not default python2**. 
 
