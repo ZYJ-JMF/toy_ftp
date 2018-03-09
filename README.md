@@ -1,4 +1,4 @@
-## ftp实验报告
+## toy_ftp(with gui client)
 
 ### ftp服务端
 使用方法：
